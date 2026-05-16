@@ -1,0 +1,1335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Faraway · v3 · teleport</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,200;9..144,300;9..144,400;9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0907; --panel:#15130f; --panel-2:#1d1a14; --text:#f4eee3; --muted:#8a8378;
+    --line:rgba(255,243,224,.08); --line-2:rgba(255,243,224,.18);
+    --accent:#e8c896; /* warm parchment gold */
+    --accent-dim:rgba(232,200,150,.18);
+    /* place atmospheres */
+    --aqua-1:#05202a; --aqua-2:#0f4858; --aqua-3:#3a8a9d; --aqua-acc:#9be6f3;
+    --cozy-1:#2a1408; --cozy-2:#5a2814; --cozy-3:#c08550; --cozy-acc:#ffd0a0;
+    --wild-1:#0f1a14; --wild-2:#1f3a2c; --wild-3:#4f7858; --wild-acc:#b8e0b8;
+    --weather-1:#0a0e1c; --weather-2:#1a2238; --weather-3:#3a4868; --weather-acc:#a6b8e6;
+    --night-1:#0a0712; --night-2:#1a1430; --night-3:#3a2a60; --night-acc:#c8b8ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#050403;color:var(--text);font-family:"Inter",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+  body{display:flex;flex-direction:column;align-items:center;padding:32px 0 80px;background:radial-gradient(ellipse at top,#13100c,#050403 60%)}
+  .top{text-align:center;margin-bottom:20px;max-width:640px;padding:0 24px}
+  .top .badge{display:inline-block;padding:4px 10px;border-radius:999px;background:rgba(232,200,150,.15);color:var(--accent);font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px}
+  .top h1{font-family:"Fraunces",serif;font-weight:300;font-size:28px;letter-spacing:-.02em;margin:0}
+  .top p{color:var(--muted);font-size:13px;margin:6px 0 0;line-height:1.5}
+  .controls{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+  .ctl{padding:7px 14px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;user-select:none}
+  .ctl:hover{color:var(--text);border-color:var(--line-2)}
+
+  .phone{position:relative;width:390px;height:844px;border-radius:46px;background:#000;overflow:hidden;box-shadow:0 60px 120px -30px rgba(0,0,0,.8),0 0 0 12px #1a181f,0 0 0 13px rgba(255,255,255,.06)}
+  .notch{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:120px;height:30px;background:#000;border-radius:20px;z-index:80}
+  .status{position:absolute;top:18px;left:28px;font-size:14px;font-weight:600;z-index:70;color:#fff;mix-blend-mode:difference}
+  .status-r{position:absolute;top:18px;right:28px;font-size:13px;font-weight:600;z-index:70;color:#fff;mix-blend-mode:difference}
+  .home-indicator{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:120px;height:4px;background:rgba(255,255,255,.5);border-radius:2px;z-index:80}
+
+  .scene{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .4s ease;display:flex;flex-direction:column;overflow:hidden}
+  .scene.on{opacity:1;pointer-events:auto}
+  .grain{position:absolute;inset:0;pointer-events:none;opacity:.4;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+
+  /* topographic line texture for Atlas/map feel */
+  .topo{position:absolute;inset:0;pointer-events:none;opacity:.08;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><g fill='none' stroke='%23ffeec4' stroke-width='0.5'><path d='M0,80 Q100,40 200,80 T400,80'/><path d='M0,120 Q100,90 200,120 T400,120'/><path d='M0,160 Q100,130 200,160 T400,160'/><path d='M0,200 Q100,170 200,200 T400,200'/><path d='M0,240 Q100,210 200,240 T400,240'/><path d='M0,280 Q100,250 200,280 T400,280'/><path d='M0,320 Q100,290 200,320 T400,320'/></g></svg>")}
+
+  .btn{display:flex;align-items:center;justify-content:center;height:54px;border-radius:999px;background:var(--accent);color:#0a0907;font-weight:600;font-size:15px;border:0;width:100%;cursor:pointer;transition:opacity .2s}
+  .btn:disabled{opacity:.3;cursor:not-allowed}
+  .btn.dark{background:#f4eee3;color:#000}
+  .btn.ghost{background:transparent;border:1px solid var(--line-2);color:var(--text)}
+  .skip-link{text-align:center;margin-top:14px;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer}
+  .skip-link:hover{color:var(--text)}
+  .topbar{display:flex;justify-content:space-between;align-items:center;color:#fff;font-size:14px;font-weight:500}
+  .topbar .b{cursor:pointer;opacity:.8}
+  .topbar .ctx{font-family:"Fraunces",serif;font-style:italic;font-size:13px;opacity:.85}
+
+  /* ===== SPLASH ===== */
+  #splash{padding:0;background:radial-gradient(circle at 50% 40%,#1f1a14,#050403 70%);display:grid;place-items:center;height:100%;position:relative}
+  #splash .topo{opacity:.12}
+  #splash .glow{position:absolute;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(232,200,150,.3),transparent 60%);filter:blur(50px);animation:pulse-g 5s ease-in-out infinite}
+  @keyframes pulse-g{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.08);opacity:.9}}
+  #splash .wordmark{font-family:"Fraunces",serif;font-weight:200;font-size:54px;letter-spacing:-.02em;color:var(--text);position:relative}
+  #splash .tag{position:absolute;bottom:120px;left:0;right:0;text-align:center;color:var(--muted);font-family:"Fraunces",serif;font-style:italic;font-size:13px}
+
+  /* ===== VALUE PROP ===== */
+  #value{padding:80px 30px 40px;background:radial-gradient(ellipse at top,#1c1814,#050403 70%);display:flex;flex-direction:column;height:100%;position:relative}
+  #value .topo{opacity:.08}
+  #value .eyebrow{font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.18em;text-transform:uppercase;margin-top:auto;position:relative;z-index:2}
+  #value .hd{font-family:"Fraunces",serif;font-weight:300;font-size:38px;letter-spacing:-.02em;line-height:1.05;color:var(--text);margin-top:14px;position:relative;z-index:2}
+  #value .lede{color:var(--muted);font-size:15px;line-height:1.6;margin-top:18px;position:relative;z-index:2}
+  #value .actions{margin-top:auto;padding-top:32px;position:relative;z-index:2}
+
+  /* ===== ONBOARDING PROMPT (the only diagnostic) ===== */
+  #ob-prompt{padding:80px 28px 40px;background:radial-gradient(ellipse at top,#1c1814,#050403 70%);display:flex;flex-direction:column;height:100%;position:relative;overflow:hidden}
+  #ob-prompt .topo{opacity:.06}
+  #ob-prompt .eyebrow{font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.18em;text-transform:uppercase;position:relative;z-index:2}
+  #ob-prompt .hd{font-family:"Fraunces",serif;font-weight:300;font-size:34px;letter-spacing:-.02em;line-height:1.05;color:var(--text);margin-top:8px;position:relative;z-index:2}
+  #ob-prompt .lede{color:var(--muted);font-size:13px;margin-top:8px;line-height:1.5;position:relative;z-index:2}
+  .input-wrap{margin-top:18px;background:rgba(255,243,224,.06);border:1px solid rgba(232,200,150,.3);border-radius:20px;padding:18px;backdrop-filter:blur(10px);position:relative;z-index:2}
+  .input-wrap textarea{width:100%;border:0;outline:0;background:transparent;color:var(--text);font-family:"Inter",sans-serif;font-size:15px;line-height:1.5;resize:none;min-height:80px}
+  .input-wrap textarea::placeholder{color:rgba(244,238,227,.4)}
+  .ideas-h{font-family:"Fraunces",serif;font-style:italic;font-size:13px;color:var(--muted);margin:20px 0 8px;position:relative;z-index:2}
+  .ideas{display:flex;flex-wrap:wrap;gap:8px;position:relative;z-index:2}
+  .idea{padding:9px 13px;border-radius:999px;background:rgba(255,243,224,.06);border:1px solid rgba(232,200,150,.18);color:var(--text);font-size:12px;font-weight:500;cursor:pointer;backdrop-filter:blur(6px);display:flex;align-items:center;gap:6px}
+  .idea:hover{background:rgba(255,243,224,.12);border-color:rgba(232,200,150,.4)}
+  .idea .e{opacity:.8}
+  .gen-btn-fixed{position:absolute;bottom:40px;left:28px;right:28px;z-index:3}
+
+  /* ===== LOADER ===== */
+  #loader{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 28px;height:100%;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 50%,#1c1814,#050403 70%)}
+  #loader.atmos-aqua{background:radial-gradient(circle at 50% 50%,var(--aqua-2),#020608 70%)}
+  #loader.atmos-cozy{background:radial-gradient(circle at 50% 50%,var(--cozy-2),#0a0503 70%)}
+  #loader.atmos-wild{background:radial-gradient(circle at 50% 50%,var(--wild-2),#020403 70%)}
+  #loader.atmos-weather{background:radial-gradient(circle at 50% 50%,var(--weather-2),#03050a 70%)}
+  #loader.atmos-night{background:radial-gradient(circle at 50% 50%,var(--night-2),#050308 70%)}
+  .gen-rings{position:relative;width:240px;height:240px;display:grid;place-items:center;margin-bottom:28px}
+  .gen-rings .r{position:absolute;border:1px solid var(--ring-c,#e8c896);border-radius:50%;animation:gring 3s ease-out infinite}
+  .gen-rings .r:nth-child(1){width:80px;height:80px;opacity:.7}
+  .gen-rings .r:nth-child(2){width:150px;height:150px;animation-delay:.6s;opacity:.45}
+  .gen-rings .r:nth-child(3){width:220px;height:220px;animation-delay:1.2s;opacity:.25}
+  .gen-rings .core{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,var(--core-c,#e8c896),transparent 70%);filter:blur(8px)}
+  @keyframes gring{0%{transform:scale(.6);opacity:.8}100%{transform:scale(1.4);opacity:0}}
+  .l-label{font-family:"Fraunces",serif;font-style:italic;color:rgba(255,255,255,.7);font-size:14px;position:relative;z-index:2}
+  .l-echo{font-family:"Fraunces",serif;font-weight:300;font-size:20px;color:#fff;line-height:1.3;margin-top:8px;text-align:center;max-width:300px;position:relative;z-index:2}
+  .l-step{margin-top:18px;font-size:12px;color:rgba(255,255,255,.5);font-style:italic;font-family:"Fraunces",serif;position:relative;z-index:2}
+
+  /* ===== PLAYER — keyed to place atmosphere ===== */
+  #player{display:flex;flex-direction:column;color:#fff;position:relative;height:100%}
+  #player.atmos-aqua{background:radial-gradient(ellipse at 50% 0%,var(--aqua-3) 0%,var(--aqua-1) 50%,#020608 100%)}
+  #player.atmos-cozy{background:radial-gradient(ellipse at 50% 0%,var(--cozy-3) 0%,var(--cozy-1) 50%,#0a0503 100%)}
+  #player.atmos-wild{background:radial-gradient(ellipse at 50% 0%,var(--wild-3) 0%,var(--wild-1) 50%,#020403 100%)}
+  #player.atmos-weather{background:radial-gradient(ellipse at 50% 0%,var(--weather-3) 0%,var(--weather-1) 60%,#03050a 100%)}
+  #player.atmos-night{background:radial-gradient(ellipse at 50% 30%,var(--night-3) 0%,var(--night-1) 60%,#050308 100%)}
+  .pt{display:flex;justify-content:space-between;align-items:center;padding:60px 28px 0;font-size:14px;font-weight:500;opacity:.85;z-index:30;position:relative}
+  .pt .close,.pt .more{cursor:pointer}
+  .pt .close{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.08);display:grid;place-items:center;font-size:14px;backdrop-filter:blur(10px)}
+  .pt .ctx{font-family:"Fraunces",serif;font-style:italic;font-size:12px}
+  .pt .more{font-size:18px;color:rgba(255,255,255,.7)}
+
+  /* PLACE VISUALS — 5 atmospheres */
+  .viz{position:relative;height:240px;display:grid;place-items:center;margin-top:6px;overflow:hidden}
+
+  /* Aqua — soft underwater shimmer + slow ripples */
+  .viz-aqua .water{position:absolute;width:100%;height:100%;background:radial-gradient(ellipse at 50% 40%,rgba(155,230,243,.25),transparent 60%);filter:blur(10px);animation:breathe 6s ease-in-out infinite}
+  .viz-aqua .surface{position:absolute;width:90%;height:50%;border-radius:50%;background:radial-gradient(circle at 50% 30%,#9be6f3,#3a8a9d 60%,transparent 80%);filter:blur(4px);opacity:.5;animation:drift 12s ease-in-out infinite}
+  .viz-aqua .rip{position:absolute;border:1px solid rgba(155,230,243,.5);border-radius:50%;width:220px;height:220px;animation:ripple 5s ease-out infinite}
+  .viz-aqua .rip.b{animation-delay:1.6s}
+  .viz-aqua .rip.c{animation-delay:3.2s}
+
+  /* Cozy — warm hearth + floating embers */
+  .viz-cozy .hearth{width:160px;height:160px;border-radius:50%;background:radial-gradient(circle at 40% 50%,#ffd0a0,#c08550 50%,#5a2814 80%);box-shadow:0 0 100px rgba(255,180,100,.6);animation:breathe 4s ease-in-out infinite;position:relative}
+  .viz-cozy .ember{position:absolute;width:3px;height:3px;background:#ffd0a0;border-radius:50%;box-shadow:0 0 6px #ffb070;animation:rise 6s ease-out infinite}
+
+  /* Wild — soft horizon line + drifting clouds */
+  .viz-wild{flex-direction:column;gap:0}
+  .viz-wild .sky{width:100%;height:140px;background:linear-gradient(180deg,#b8e0b8 0%,#5a7858 70%,#1f3a2c 100%);opacity:.6;position:relative;overflow:hidden}
+  .viz-wild .sun{position:absolute;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,#fff,#e8e8b8 50%,transparent 80%);top:40px;left:50%;transform:translateX(-50%);filter:blur(2px);opacity:.9;animation:breathe 8s ease-in-out infinite}
+  .viz-wild .horizon{width:100%;height:100px;background:linear-gradient(180deg,#1f3a2c,#0f1a14);clip-path:polygon(0 30%,15% 20%,30% 35%,50% 15%,70% 30%,85% 20%,100% 30%,100% 100%,0 100%)}
+
+  /* Weather — animated rain lines */
+  .viz-weather{position:relative}
+  .viz-weather .cloud{position:absolute;top:30px;left:50%;transform:translateX(-50%);width:160px;height:60px;background:radial-gradient(ellipse,#a6b8e6 30%,#3a4868 80%);border-radius:50%;filter:blur(8px);opacity:.5;animation:drift 14s ease-in-out infinite}
+  .viz-weather .rain{position:absolute;width:1px;background:linear-gradient(180deg,transparent,#a6b8e6);animation:rain 1.4s linear infinite}
+
+  /* Night — moon + stars + nebula */
+  .viz-night .nebula{position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#7a85d6 0%,#3a2a60 30%,transparent 70%);filter:blur(20px);opacity:.7;animation:drift 14s ease-in-out infinite}
+  .viz-night .moon{position:absolute;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#dfe2ff 40%,#8e96d6 90%);box-shadow:0 0 60px rgba(167,182,255,.5);animation:breathe 7s ease-in-out infinite}
+  .viz-night .stars span{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;box-shadow:0 0 4px #fff;animation:twinkle 4s ease-in-out infinite}
+
+  @keyframes drift{0%,100%{transform:translate(-50%,0) scale(1)}50%{transform:translate(-46%,-6px) scale(1.04)}}
+  @keyframes breathe{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.05);opacity:.92}}
+  @keyframes twinkle{0%,100%{opacity:.3}50%{opacity:1}}
+  @keyframes ripple{0%{transform:scale(.5);opacity:.8}100%{transform:scale(1.8);opacity:0}}
+  @keyframes rise{0%{transform:translateY(60px);opacity:0}20%{opacity:1}100%{transform:translateY(-120px);opacity:0}}
+  @keyframes rain{0%{transform:translateY(-40px);height:20px;opacity:0}20%{opacity:.5}80%{opacity:.5}100%{transform:translateY(240px);opacity:0;height:30px}}
+
+  .ptitle{text-align:center;padding:10px 28px 4px;position:relative;z-index:5}
+  .ptitle .eyebrow{font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;opacity:.85}
+  .ptitle .eyebrow.aqua{color:var(--aqua-acc)}
+  .ptitle .eyebrow.cozy{color:var(--cozy-acc)}
+  .ptitle .eyebrow.wild{color:var(--wild-acc)}
+  .ptitle .eyebrow.weather{color:var(--weather-acc)}
+  .ptitle .eyebrow.night{color:var(--night-acc)}
+  .ptitle .title{font-family:"Fraunces",serif;font-weight:300;font-size:22px;margin-top:4px;line-height:1.15}
+  .ptitle .sub{color:rgba(255,255,255,.55);font-size:11px;margin-top:4px;font-style:italic;font-family:"Fraunces",serif}
+
+  .mix{padding:10px 24px 8px}
+  .srow{display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:6px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden;cursor:pointer;user-select:none}
+  .srow.muted{opacity:.45}
+  .srow .ic{font-size:14px;width:18px;text-align:center;flex:0 0 18px;opacity:.85;z-index:2}
+  .srow .nm{flex:1;font-size:13px;font-weight:500;z-index:2}
+  .srow .vbar{position:absolute;left:0;top:0;bottom:0;pointer-events:none;border-radius:14px;transition:width .08s linear;background:linear-gradient(90deg,rgba(232,200,150,.22),rgba(232,200,150,.08))}
+  .srow .knob{position:absolute;top:50%;width:2px;height:60%;transform:translate(-1px,-50%);border-radius:1px;pointer-events:none;transition:left .08s linear;background:var(--accent)}
+  .srow .pct{font-size:10px;font-weight:600;color:rgba(255,255,255,.5);font-variant-numeric:tabular-nums;z-index:2;width:24px;text-align:right}
+  .add-sound{display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:14px;border:1px dashed rgba(255,255,255,.18);font-size:12px;font-weight:500;color:rgba(255,255,255,.55);margin-top:4px;cursor:pointer}
+
+  .insight{margin:10px 24px 0;padding:13px 16px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;gap:10px;align-items:flex-start;transform:translateY(8px);opacity:0;transition:all .5s ease}
+  .insight.show{transform:translateY(0);opacity:1}
+  .insight .ic{font-size:13px;margin-top:1px}
+  .insight .body{flex:1;font-size:11.5px;line-height:1.45;color:rgba(255,255,255,.75)}
+  .insight .body b{color:#fff;font-weight:600}
+  .insight .body .src{display:block;color:rgba(255,255,255,.4);font-size:9.5px;margin-top:4px;font-style:italic}
+  .insight .x{color:rgba(255,255,255,.4);font-size:13px;cursor:pointer;line-height:1}
+
+  .pcontrols{position:absolute;bottom:36px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:0 50px;z-index:40}
+  .pc{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.08);display:grid;place-items:center;font-size:15px;color:#fff;backdrop-filter:blur(10px);cursor:pointer}
+  .pc.big{width:70px;height:70px;background:rgba(255,255,255,.95);color:#0a0907;font-size:20px;box-shadow:0 16px 40px -10px rgba(255,255,255,.3)}
+  .pc.heart{color:#ff7a90;font-size:17px}
+  .pc.heart.on{color:#ff5577}
+  .timer-pill{position:absolute;bottom:125px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:6px 13px;border-radius:999px;font-size:11px;font-weight:600;color:rgba(255,255,255,.8);display:flex;gap:6px;align-items:center;z-index:40;cursor:pointer}
+  .timer-pill .dot{width:5px;height:5px;background:#ff7a90;border-radius:50%}
+
+  /* ===== ACCOUNT ===== */
+  #account{padding:80px 28px 40px;background:radial-gradient(ellipse at top,#1c1814,#050403 70%);height:100%;display:flex;flex-direction:column;position:relative}
+  #account .topo{opacity:.06}
+  #account .hd{font-family:"Fraunces",serif;font-weight:300;font-size:28px;letter-spacing:-.02em;line-height:1.1;margin-top:auto;position:relative;z-index:2}
+  #account .lede{color:var(--muted);font-size:14px;line-height:1.5;margin-top:10px;position:relative;z-index:2}
+  #account .actions{margin-top:auto;padding-top:24px;display:flex;flex-direction:column;gap:10px;position:relative;z-index:2}
+  #account .legal{text-align:center;color:var(--muted);font-size:10px;margin-top:14px;position:relative;z-index:2}
+
+  /* ===== PAYWALL ===== */
+  #paywall{padding:80px 28px 40px;background:radial-gradient(ellipse at top,#1c1814,#050403 70%);height:100%;display:flex;flex-direction:column;position:relative}
+  #paywall .topo{opacity:.06}
+  #paywall .x{position:absolute;top:54px;right:24px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.06);display:grid;place-items:center;color:var(--muted);font-size:16px;cursor:pointer;z-index:3}
+  #paywall .eyebrow{font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.18em;text-transform:uppercase;position:relative;z-index:2}
+  #paywall .hd{font-family:"Fraunces",serif;font-weight:300;font-size:26px;letter-spacing:-.02em;line-height:1.1;margin-top:6px;position:relative;z-index:2}
+  .feature{display:flex;align-items:center;gap:12px;margin:7px 0;font-size:13px;font-weight:500;position:relative;z-index:2}
+  .feature .dot{width:6px;height:6px;background:var(--accent);border-radius:50%}
+  .plan{background:rgba(232,200,150,.14);border:1px solid var(--accent);border-radius:18px;padding:14px 16px;position:relative;margin-top:14px;z-index:2}
+  .plan .tag{position:absolute;right:14px;top:14px;background:var(--accent);color:#0a0907;font-size:10px;font-weight:700;padding:4px 8px;border-radius:6px}
+  .plan .label{font-size:13px;font-weight:600;color:var(--accent)}
+  .plan .price{font-size:16px;font-weight:600;margin-top:4px;color:#fff}
+  .stars{text-align:center;color:var(--muted);font-size:11px;margin-top:10px;letter-spacing:.04em;position:relative;z-index:2}
+
+  /* ===== HOME ===== */
+  #home{position:relative;height:100%;padding:56px 24px 100px;overflow:auto;background:radial-gradient(ellipse at top,#1c1814,#050403 60%)}
+  #home .topo{opacity:.06}
+  .greet{padding:14px 4px 12px;position:relative;z-index:2}
+  .greet .h{font-family:"Fraunces",serif;font-weight:300;font-size:26px;letter-spacing:-.02em;line-height:1.1}
+  .greet .sub{color:var(--muted);font-size:13px;margin-top:6px;font-family:"Fraunces",serif;font-style:italic}
+
+  /* WHERE TO TODAY — the hook */
+  .where-to{position:relative;border-radius:24px;overflow:hidden;height:240px;margin-top:8px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;padding:18px 20px;box-shadow:0 30px 60px -20px rgba(0,0,0,.6);z-index:2}
+  .where-to.atmos-night{background:linear-gradient(135deg,var(--night-1),var(--night-2) 60%,var(--night-3))}
+  .where-to.atmos-aqua{background:linear-gradient(135deg,var(--aqua-1),var(--aqua-2) 60%,var(--aqua-3))}
+  .where-to.atmos-cozy{background:linear-gradient(135deg,var(--cozy-1),var(--cozy-2) 60%,var(--cozy-3))}
+  .where-to.atmos-wild{background:linear-gradient(135deg,var(--wild-1),var(--wild-2) 60%,var(--wild-3))}
+  .where-to.atmos-weather{background:linear-gradient(135deg,var(--weather-1),var(--weather-2) 60%,var(--weather-3))}
+  .where-to .stars span{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;box-shadow:0 0 4px #fff;animation:twinkle 4s ease-in-out infinite}
+  .where-to .top{display:flex;justify-content:space-between;color:rgba(255,255,255,.85);font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;z-index:3;position:relative}
+  .where-to .body{z-index:3;position:relative}
+  .where-to .invite{font-family:"Fraunces",serif;font-style:italic;font-size:13px;opacity:.85;margin-bottom:6px}
+  .where-to .name{font-family:"Fraunces",serif;font-weight:300;font-size:30px;line-height:1.05;letter-spacing:-.01em;color:#fff;max-width:240px}
+  .where-to .why{font-size:11px;color:rgba(255,255,255,.7);margin-top:8px;line-height:1.4;max-width:260px}
+  .where-to .go{position:absolute;right:20px;bottom:20px;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.95);color:#0a0907;display:grid;place-items:center;font-size:18px;z-index:4}
+
+  .row-h{display:flex;justify-content:space-between;align-items:baseline;margin:22px 0 10px;padding:0 2px;position:relative;z-index:2}
+  .row-h .t{font-family:"Fraunces",serif;font-style:italic;font-size:16px}
+  .row-h .a{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+
+  /* Recently visited (horizontal) */
+  .recent{display:flex;gap:10px;overflow-x:auto;margin:0 -24px;padding:0 24px 4px;scrollbar-width:none;position:relative;z-index:2}
+  .recent::-webkit-scrollbar{display:none}
+  .place-tile{flex:0 0 auto;width:140px;cursor:pointer}
+  .place-tile .art{height:140px;border-radius:14px;position:relative;overflow:hidden}
+  .place-tile .art::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.18),transparent 60%)}
+  .place-tile.atmos-aqua .art{background:linear-gradient(135deg,var(--aqua-1),var(--aqua-3))}
+  .place-tile.atmos-cozy .art{background:linear-gradient(135deg,var(--cozy-1),var(--cozy-3))}
+  .place-tile.atmos-wild .art{background:linear-gradient(135deg,var(--wild-1),var(--wild-3))}
+  .place-tile.atmos-weather .art{background:linear-gradient(135deg,var(--weather-1),var(--weather-3))}
+  .place-tile.atmos-night .art{background:linear-gradient(135deg,var(--night-1),var(--night-3))}
+  .place-tile .nm{font-family:"Fraunces",serif;font-weight:400;font-size:13px;margin-top:8px;line-height:1.2}
+  .place-tile .when{font-size:10px;color:var(--muted);margin-top:2px;font-style:italic;font-family:"Fraunces",serif}
+
+  /* Atlas worlds row */
+  .worlds{display:grid;grid-template-columns:1fr 1fr;gap:10px;position:relative;z-index:2}
+  .world{position:relative;height:110px;border-radius:18px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:14px;cursor:pointer}
+  .world .em{font-size:20px;z-index:2;opacity:.9}
+  .world .nm{font-family:"Fraunces",serif;font-size:18px;color:#fff;z-index:2}
+  .world.atmos-aqua{background:radial-gradient(ellipse at 30% 30%,var(--aqua-3),var(--aqua-1))}
+  .world.atmos-cozy{background:radial-gradient(ellipse at 70% 70%,var(--cozy-3),var(--cozy-1))}
+  .world.atmos-wild{background:radial-gradient(ellipse at 30% 70%,var(--wild-3),var(--wild-1))}
+  .world.atmos-weather{background:radial-gradient(ellipse at 50% 50%,var(--weather-3),var(--weather-1))}
+  .world.atmos-night{background:radial-gradient(ellipse at 50% 100%,var(--night-3),var(--night-1));grid-column:span 2;height:80px;flex-direction:row;align-items:center;justify-content:space-between}
+  .world.atmos-night .em{font-size:18px}
+  .world.atmos-night .nm{font-size:16px}
+
+  /* ===== ATLAS PAGE ===== */
+  #atlas{position:relative;height:100%;padding:60px 24px 100px;background:radial-gradient(ellipse at top,#1c1814,#050403 60%);overflow:auto}
+  #atlas .topo{opacity:.08}
+  #atlas h2{font-family:"Fraunces",serif;font-weight:300;font-size:30px;letter-spacing:-.02em;margin:14px 0 4px;position:relative;z-index:2}
+  #atlas .sub{color:var(--muted);font-size:13px;font-style:italic;font-family:"Fraunces",serif;position:relative;z-index:2}
+  .atlas-section{margin-top:20px;position:relative;z-index:2}
+  .atlas-section .h{font-family:"Fraunces",serif;font-style:italic;font-size:17px;display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .atlas-section .h .em{font-size:18px}
+  .atlas-section .h .count{font-size:11px;color:var(--muted);font-family:"Inter",sans-serif;font-style:normal;font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+  .place-list{display:flex;flex-direction:column;gap:8px}
+  .place-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:var(--panel);border:1px solid var(--line);cursor:pointer}
+  .place-row .swatch{width:46px;height:46px;border-radius:10px;flex:0 0 46px;position:relative;overflow:hidden}
+  .place-row .swatch::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.2),transparent 60%)}
+  .place-row.atmos-aqua .swatch{background:linear-gradient(135deg,var(--aqua-1),var(--aqua-3))}
+  .place-row.atmos-cozy .swatch{background:linear-gradient(135deg,var(--cozy-1),var(--cozy-3))}
+  .place-row.atmos-wild .swatch{background:linear-gradient(135deg,var(--wild-1),var(--wild-3))}
+  .place-row.atmos-weather .swatch{background:linear-gradient(135deg,var(--weather-1),var(--weather-3))}
+  .place-row.atmos-night .swatch{background:linear-gradient(135deg,var(--night-1),var(--night-3))}
+  .place-row .meta{flex:1;min-width:0}
+  .place-row .nm{font-family:"Fraunces",serif;font-size:15px;font-weight:400}
+  .place-row .desc{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .place-row .go{color:var(--muted);font-size:14px}
+
+  /* ===== SOUNDPRINT — atlas of your week ===== */
+  #soundprint{position:relative;height:100%;padding:60px 24px 100px;background:#0a0907;overflow:auto;color:#fff}
+  #soundprint .topo{opacity:.06}
+  #soundprint .eyebrow{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);position:relative;z-index:2}
+  #soundprint h2{font-family:"Fraunces",serif;font-weight:300;font-size:30px;letter-spacing:-.02em;margin:8px 0 0;position:relative;z-index:2;line-height:1.1}
+  #soundprint .sub{color:var(--muted);font-size:13px;font-family:"Fraunces",serif;font-style:italic;margin-top:6px;position:relative;z-index:2}
+
+  /* MAP of week's journey */
+  .week-map{margin-top:18px;height:300px;border-radius:24px;position:relative;overflow:hidden;background:radial-gradient(circle at 20% 30%,var(--aqua-3) 0%,transparent 30%),radial-gradient(circle at 70% 25%,var(--cozy-3) 0%,transparent 30%),radial-gradient(circle at 40% 70%,var(--wild-3) 0%,transparent 28%),radial-gradient(circle at 80% 75%,var(--night-3) 0%,transparent 28%),radial-gradient(circle at 50% 90%,var(--weather-3) 0%,transparent 25%),#0a0907;box-shadow:inset 0 0 60px rgba(0,0,0,.5)}
+  .week-map .topo{opacity:.18}
+  .week-map .pin{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .week-map .pin .dot{width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(255,255,255,.6)}
+  .week-map .pin .lbl{font-family:"Fraunces",serif;font-style:italic;font-size:10px;color:rgba(255,255,255,.85);text-shadow:0 1px 4px rgba(0,0,0,.5);white-space:nowrap}
+  .week-map .path{position:absolute;inset:0;pointer-events:none}
+
+  .sp-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;position:relative;z-index:2}
+  .sp-stat{background:var(--panel);border-radius:14px;padding:12px;border:1px solid var(--line)}
+  .sp-stat .lbl{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .sp-stat .v{font-family:"Fraunces",serif;font-weight:400;font-size:20px;margin-top:4px}
+  .sp-stat .sub{font-size:11px;color:var(--muted);margin-top:2px}
+  .visited-list{margin-top:14px;background:var(--panel);border-radius:14px;border:1px solid var(--line);padding:6px 0;position:relative;z-index:2}
+  .visited{display:flex;align-items:center;gap:12px;padding:10px 14px}
+  .visited .swatch{width:36px;height:36px;border-radius:8px;flex:0 0 36px;position:relative;overflow:hidden}
+  .visited.atmos-aqua .swatch{background:linear-gradient(135deg,var(--aqua-1),var(--aqua-3))}
+  .visited.atmos-cozy .swatch{background:linear-gradient(135deg,var(--cozy-1),var(--cozy-3))}
+  .visited.atmos-wild .swatch{background:linear-gradient(135deg,var(--wild-1),var(--wild-3))}
+  .visited.atmos-weather .swatch{background:linear-gradient(135deg,var(--weather-1),var(--weather-3))}
+  .visited.atmos-night .swatch{background:linear-gradient(135deg,var(--night-1),var(--night-3))}
+  .visited .meta{flex:1;min-width:0}
+  .visited .nm{font-family:"Fraunces",serif;font-size:14px}
+  .visited .when{font-size:10px;color:var(--muted);font-family:"Fraunces",serif;font-style:italic}
+  .visited .freq{font-size:10px;color:var(--muted);letter-spacing:.04em}
+  .sp-share{margin-top:14px;position:relative;z-index:2}
+
+  /* ===== TAB BAR ===== */
+  .tabbar{position:absolute;bottom:0;left:0;right:0;height:84px;background:rgba(10,9,7,.88);backdrop-filter:blur(20px);border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;padding-bottom:22px;z-index:60}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.04em;cursor:pointer;width:56px}
+  .tab .ic{width:22px;height:22px;display:grid;place-items:center;font-size:17px}
+  .tab.active{color:var(--text)}
+  .tab.fab{background:linear-gradient(135deg,#f4eee3,#e8c896);color:#0a0907;width:54px;height:54px;border-radius:50%;margin-top:-22px;font-size:26px;box-shadow:0 12px 28px -8px rgba(232,200,150,.6)}
+
+  .hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(20,18,14,.94);border:1px solid var(--line-2);padding:10px 18px;border-radius:999px;font-size:12px;color:var(--text);backdrop-filter:blur(10px);z-index:200;opacity:0;transition:opacity .3s;pointer-events:none}
+  .hint.show{opacity:1}
+
+  /* ============ COSMIC HOME ============ */
+  #home{background:#03020a !important}
+  .cosmos{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+  .cosmos .galaxy{position:absolute;width:140%;height:80%;top:-10%;left:-20%;
+    background:
+      radial-gradient(ellipse at 30% 40%, rgba(232,200,150,.18) 0%, transparent 25%),
+      radial-gradient(ellipse at 70% 30%, rgba(155,180,255,.18) 0%, transparent 25%),
+      radial-gradient(ellipse at 50% 60%, rgba(200,184,255,.14) 0%, transparent 30%);
+    filter:blur(40px);animation:galaxy-drift 60s ease-in-out infinite}
+  @keyframes galaxy-drift{0%,100%{transform:translate(0,0) rotate(0)}50%{transform:translate(-20px,10px) rotate(2deg)}}
+  .cosmos .nebula-band{position:absolute;width:120%;height:200px;top:35%;left:-10%;
+    background:radial-gradient(ellipse at 50% 50%, rgba(60,40,100,.5), transparent 70%);
+    filter:blur(30px);opacity:.6;animation:galaxy-drift 80s ease-in-out infinite reverse}
+  .star{position:absolute;background:#fff;border-radius:50%;animation:twk 4s ease-in-out infinite}
+  .star.s1{width:1px;height:1px}
+  .star.s2{width:1.5px;height:1.5px}
+  .star.s3{width:2px;height:2px;box-shadow:0 0 3px rgba(255,255,255,.8)}
+  .star.s4{width:2.5px;height:2.5px;box-shadow:0 0 4px #fff,0 0 8px rgba(232,200,150,.5)}
+  @keyframes twk{0%,100%{opacity:.2}50%{opacity:1}}
+  .shooting{position:absolute;width:80px;height:1px;background:linear-gradient(90deg,transparent,#fff);transform-origin:left center;opacity:0;animation:shoot 8s linear infinite}
+  @keyframes shoot{
+    0%{opacity:0;transform:translate(0,0) rotate(20deg)}
+    5%{opacity:1}
+    15%{opacity:0;transform:translate(220px,80px) rotate(20deg)}
+    100%{opacity:0;transform:translate(220px,80px) rotate(20deg)}
+  }
+
+  /* Atlas chrome on home */
+  .compass-line{position:relative;display:flex;align-items:center;gap:10px;color:var(--accent);font-family:"Fraunces",serif;font-style:italic;font-size:11px;letter-spacing:.04em;z-index:2;margin-bottom:8px;opacity:.6}
+  .compass-line::before{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(232,200,150,.4))}
+  .compass-line::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(232,200,150,.4),transparent)}
+  .home-greet-coords{color:var(--accent);font-family:"Fraunces",serif;font-style:italic;font-size:11px;letter-spacing:.1em;opacity:.7;margin-bottom:4px;text-transform:uppercase}
+
+  /* "Where to today?" card — feels like an atlas destination card */
+  .where-to{box-shadow:0 30px 60px -20px rgba(0,0,0,.7), inset 0 0 0 1px rgba(232,200,150,.18) !important}
+  .where-to .coord{position:absolute;top:18px;right:54px;font-family:"Fraunces",serif;font-style:italic;font-size:9px;color:rgba(255,255,255,.55);letter-spacing:.06em;z-index:3}
+  .where-to .corner-mark{position:absolute;width:14px;height:14px;border:1px solid rgba(232,200,150,.5);opacity:.7;z-index:3}
+  .where-to .cm1{top:8px;left:8px;border-right:0;border-bottom:0}
+  .where-to .cm2{top:8px;right:8px;border-left:0;border-bottom:0}
+  .where-to .cm3{bottom:8px;left:8px;border-right:0;border-top:0}
+  .where-to .cm4{bottom:8px;right:8px;border-left:0;border-top:0}
+
+  /* ============ UPGRADED ATMOSPHERE ANIMATIONS ============ */
+
+  /* ---- AQUA — caustics, waves, bubbles, light rays ---- */
+  .viz-aqua{background:linear-gradient(180deg,#0f4858 0%,#05202a 80%);overflow:hidden}
+  .viz-aqua .caustic{position:absolute;inset:0;background:
+    radial-gradient(circle at 20% 30%,rgba(155,230,243,.4),transparent 40%),
+    radial-gradient(circle at 70% 20%,rgba(255,255,255,.3),transparent 40%),
+    radial-gradient(circle at 50% 60%,rgba(155,230,243,.3),transparent 50%);
+    mix-blend-mode:screen;animation:caustic 8s ease-in-out infinite;filter:blur(8px)}
+  @keyframes caustic{
+    0%,100%{transform:translate(0,0) scale(1)}
+    33%{transform:translate(-20px,10px) scale(1.05)}
+    66%{transform:translate(10px,-15px) scale(.97)}
+  }
+  .viz-aqua .ray{position:absolute;top:-10%;width:80px;height:120%;background:linear-gradient(180deg,rgba(255,255,255,.18),transparent);transform:skewX(-15deg);animation:ray 7s ease-in-out infinite;filter:blur(6px)}
+  .viz-aqua .ray.r1{left:20%;animation-delay:0s}
+  .viz-aqua .ray.r2{left:55%;animation-delay:2s;width:50px}
+  .viz-aqua .ray.r3{left:75%;animation-delay:4s;width:100px}
+  @keyframes ray{0%,100%{opacity:.4;transform:skewX(-15deg) translateY(0)}50%{opacity:.7;transform:skewX(-12deg) translateY(8px)}}
+  .viz-aqua .wave{position:absolute;left:0;right:0;height:40px;background:radial-gradient(ellipse,rgba(155,230,243,.5),transparent 70%);animation:wavefloat 5s ease-in-out infinite}
+  .viz-aqua .wave.w1{bottom:30%;animation-delay:0s}
+  .viz-aqua .wave.w2{bottom:50%;animation-delay:1.5s;opacity:.6}
+  .viz-aqua .wave.w3{bottom:70%;animation-delay:3s;opacity:.4}
+  @keyframes wavefloat{0%,100%{transform:translateX(-10px) scaleX(1)}50%{transform:translateX(10px) scaleX(1.05)}}
+  .viz-aqua .bubble{position:absolute;bottom:-20px;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,rgba(155,230,243,.4));box-shadow:0 0 6px rgba(155,230,243,.6);animation:bubble-rise 8s ease-in infinite}
+
+  @keyframes bubble-rise{
+    0%{transform:translateY(0) translateX(0);opacity:0}
+    10%{opacity:.9}
+    100%{transform:translateY(-260px) translateX(20px);opacity:0}
+  }
+
+  /* ---- COZY — fire, embers, glow ---- */
+  .viz-cozy{background:radial-gradient(ellipse at 50% 80%,#5a2814,#0a0503 80%);overflow:hidden}
+  .viz-cozy .glow{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(255,180,100,.45),transparent 60%);filter:blur(30px);animation:glow-pulse 3s ease-in-out infinite;bottom:-40px}
+  @keyframes glow-pulse{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+  .viz-cozy .hearth{position:absolute;bottom:40px;width:140px;height:130px;background:radial-gradient(ellipse at 50% 80%,#ffd0a0 0%,#ff9050 30%,#c04a10 60%,transparent 80%);border-radius:50% 50% 40% 40%;animation:flame 2.5s ease-in-out infinite;filter:blur(2px)}
+  @keyframes flame{0%,100%{transform:scaleY(1) scaleX(1)}25%{transform:scaleY(1.08) scaleX(.95)}75%{transform:scaleY(.95) scaleX(1.05)}}
+  .viz-cozy .flame-tongue{position:absolute;bottom:60px;width:30px;height:80px;background:radial-gradient(ellipse at 50% 80%,#ffe0b0,#ffa050,transparent);border-radius:50% 50% 40% 40%;filter:blur(3px)}
+  .viz-cozy .flame-tongue.f1{left:42%;animation:tongue 1.8s ease-in-out infinite}
+  .viz-cozy .flame-tongue.f2{left:50%;animation:tongue 1.5s ease-in-out infinite reverse;height:60px}
+  .viz-cozy .flame-tongue.f3{left:58%;animation:tongue 2s ease-in-out infinite;height:70px}
+  @keyframes tongue{0%,100%{transform:translateY(0) scaleY(1) scaleX(1)}50%{transform:translateY(-10px) scaleY(1.2) scaleX(.9)}}
+  .viz-cozy .ember{position:absolute;bottom:60px;width:3px;height:3px;background:#ffd0a0;border-radius:50%;box-shadow:0 0 6px #ffb070,0 0 12px rgba(255,160,80,.5);animation:ember-rise 5s ease-out infinite}
+  @keyframes ember-rise{
+    0%{transform:translateY(0) translateX(0);opacity:0}
+    10%{opacity:1}
+    50%{transform:translateY(-100px) translateX(15px);opacity:.8}
+    100%{transform:translateY(-200px) translateX(-10px);opacity:0}
+  }
+
+  /* ---- WILD — parallax mountains, drifting clouds, sun glow ---- */
+  .viz-wild{background:linear-gradient(180deg,#1c3528 0%,#0f1a14 100%);overflow:hidden;flex-direction:column;display:block}
+  .viz-wild .sky-glow{position:absolute;top:0;left:0;right:0;height:140px;background:linear-gradient(180deg,rgba(184,224,184,.3),rgba(184,224,184,0))}
+  .viz-wild .wsun{position:absolute;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,#fff,#fff8b8 50%,transparent 80%);box-shadow:0 0 60px rgba(255,250,200,.6);top:30px;left:50%;transform:translateX(-50%);animation:sun-pulse 8s ease-in-out infinite}
+  @keyframes sun-pulse{0%,100%{opacity:.85;box-shadow:0 0 60px rgba(255,250,200,.6)}50%{opacity:1;box-shadow:0 0 80px rgba(255,250,200,.8)}}
+  .viz-wild .cloud{position:absolute;height:24px;border-radius:50%;background:radial-gradient(ellipse,rgba(255,255,255,.5),transparent 70%);filter:blur(6px);animation:cloud-drift 30s linear infinite}
+  .viz-wild .cloud.c1{width:120px;top:50px;animation-delay:-5s}
+  .viz-wild .cloud.c2{width:80px;top:90px;animation-delay:-15s;animation-duration:40s;opacity:.7}
+  @keyframes cloud-drift{0%{left:-30%}100%{left:130%}}
+  .viz-wild .mtn{position:absolute;bottom:0;left:0;right:0;height:100px;background:#4f7858;clip-path:polygon(0 100%, 0 60%, 12% 30%, 25% 55%, 38% 25%, 52% 50%, 65% 20%, 78% 45%, 88% 35%, 100% 55%, 100% 100%);opacity:.5;animation:mtn-sway 20s ease-in-out infinite}
+  .viz-wild .mtn.front{height:70px;background:#2a4030;clip-path:polygon(0 100%, 0 70%, 15% 40%, 30% 65%, 48% 35%, 62% 60%, 78% 30%, 92% 55%, 100% 45%, 100% 100%);opacity:.9}
+  @keyframes mtn-sway{0%,100%{transform:translateX(0)}50%{transform:translateX(-4px)}}
+  .viz-wild .grass{position:absolute;bottom:0;left:0;right:0;height:20px;background:linear-gradient(180deg,transparent,#1f3a2c);opacity:.9}
+
+  /* ---- WEATHER — multi-depth rain, lightning, dark clouds ---- */
+  .viz-weather{background:linear-gradient(180deg,#1a2238 0%,#0a0e1c 100%);overflow:hidden}
+  .viz-weather .stormcloud{position:absolute;top:20px;left:10%;right:10%;height:80px;background:radial-gradient(ellipse at 50% 50%,#5a6890,#2a3868);border-radius:50%;filter:blur(12px);opacity:.7;animation:cloud-drift-slow 20s ease-in-out infinite}
+  @keyframes cloud-drift-slow{0%,100%{transform:translateX(0)}50%{transform:translateX(15px)}}
+  .viz-weather .lightning{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(255,255,255,.7),transparent 60%);opacity:0;animation:flash 10s ease-out infinite}
+  @keyframes flash{0%,90%,100%{opacity:0}92%{opacity:.6}93%{opacity:0}94%{opacity:.8}96%{opacity:0}}
+  .viz-weather .rain{position:absolute;width:1.5px;background:linear-gradient(180deg,transparent,#a6b8e6);animation:rain-fall 1s linear infinite}
+  .viz-weather .rain.near{width:2px;height:30px;opacity:.8}
+  .viz-weather .rain.mid{width:1.5px;height:24px;opacity:.6}
+  .viz-weather .rain.far{width:1px;height:18px;opacity:.4}
+  @keyframes rain-fall{0%{transform:translateY(-40px)}100%{transform:translateY(280px)}}
+  .viz-weather .puddle{position:absolute;bottom:8px;left:50%;width:120px;height:6px;border-radius:50%;background:radial-gradient(ellipse,rgba(166,184,230,.4),transparent 70%);filter:blur(2px);transform:translateX(-50%);animation:puddle-shimmer 2s ease-in-out infinite}
+  @keyframes puddle-shimmer{0%,100%{opacity:.4;transform:translateX(-50%) scaleX(1)}50%{opacity:.7;transform:translateX(-50%) scaleX(1.1)}}
+
+  /* ---- NIGHT — dense stars, shooting stars, constellation, moon, aurora ---- */
+  .viz-night{background:radial-gradient(ellipse at 50% 60%,#1a1430 0%,#0a0712 80%);overflow:hidden}
+  .viz-night .aurora{position:absolute;top:0;left:-20%;right:-20%;height:60%;background:
+    radial-gradient(ellipse at 30% 30%,rgba(120,200,180,.25),transparent 50%),
+    radial-gradient(ellipse at 70% 40%,rgba(180,120,220,.2),transparent 50%);
+    filter:blur(40px);animation:aurora-drift 20s ease-in-out infinite}
+  @keyframes aurora-drift{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(20px,-10px) scale(1.05)}}
+  .viz-night .nstars span{position:absolute;background:#fff;border-radius:50%;animation:twk 4s ease-in-out infinite}
+  .viz-night .moon{position:absolute;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#dfe2ff 40%,#8e96d6 90%);box-shadow:0 0 60px rgba(167,182,255,.5),0 0 120px rgba(167,182,255,.25);top:30px;right:40px;animation:moon-breathe 7s ease-in-out infinite}
+  @keyframes moon-breathe{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.04);opacity:.94}}
+  .viz-night .constellation{position:absolute;top:30%;left:20%;width:120px;height:80px;opacity:.4}
+  .viz-night .shoot{position:absolute;width:80px;height:1px;background:linear-gradient(90deg,transparent,#fff);transform-origin:left;opacity:0;animation:shoot-night 14s linear infinite}
+  .viz-night .shoot.s1{top:25%;left:10%;animation-delay:0s}
+  .viz-night .shoot.s2{top:55%;left:60%;animation-delay:7s}
+  @keyframes shoot-night{
+    0%,90%{opacity:0;transform:translate(0,0) rotate(25deg)}
+    91%{opacity:1}
+    97%{opacity:0;transform:translate(180px,80px) rotate(25deg)}
+    100%{opacity:0}
+  }
+
+  /* ============ GOAL QUESTION ============ */
+  #goal-q{padding:80px 24px 40px;background:radial-gradient(ellipse at top,#1c1814,#050403 70%);display:flex;flex-direction:column;height:100%;position:relative;overflow:hidden}
+  #goal-q .topo{opacity:.06}
+  #goal-q .topbar{position:relative;z-index:2}
+  #goal-q .eyebrow{font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.18em;text-transform:uppercase;margin-top:30px;position:relative;z-index:2}
+  #goal-q .hd{font-family:"Fraunces",serif;font-weight:300;font-size:30px;letter-spacing:-.02em;line-height:1.05;margin-top:8px;color:var(--text);position:relative;z-index:2}
+  #goal-q .place-echo{color:var(--accent);font-family:"Fraunces",serif;font-style:italic;font-size:14px;margin-top:14px;position:relative;z-index:2}
+  #goal-q .place-echo b{color:var(--text);font-weight:400}
+  .goals{margin-top:24px;display:flex;flex-direction:column;gap:8px;position:relative;z-index:2}
+  .goal-opt{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:16px;background:rgba(255,243,224,.04);border:1px solid var(--line);cursor:pointer;transition:all .15s ease}
+  .goal-opt:hover{background:rgba(255,243,224,.07);border-color:var(--line-2)}
+  .goal-opt.sel{background:rgba(232,200,150,.12);border-color:var(--accent)}
+  .goal-opt .em{font-size:22px;width:32px;text-align:center}
+  .goal-opt .body{flex:1}
+  .goal-opt .nm{font-family:"Fraunces",serif;font-size:17px}
+  .goal-opt .desc{font-size:11px;color:var(--muted);margin-top:2px}
+  .goal-opt .arrow{color:var(--muted);font-size:14px;opacity:0;transition:opacity .15s}
+  .goal-opt.sel .arrow{opacity:1;color:var(--accent)}
+  #goal-q .cta-wrap{margin-top:auto;padding-top:18px;position:relative;z-index:2}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <span class="badge">v3 · teleport</span>
+  <h1>Faraway prototype v3</h1>
+  <p>Place-based, not mood-based. Where do you want to go? Wedge: imaginative escape. v1 and v2 still live untouched in their own folders.</p>
+  <div class="controls">
+    <span class="ctl" id="reset-onboard">↻ Restart onboarding</span>
+    <span class="ctl" id="skip-to-home">⤳ Skip to home (seeded)</span>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="status">9:41</div>
+  <div class="status-r">●●● 96</div>
+
+  <!-- 1. SPLASH -->
+  <div class="scene on" id="scene-splash">
+    <div id="splash">
+      <div class="topo"></div>
+      <div class="glow"></div>
+      <div class="wordmark">faraway</div>
+      <div class="tag">go somewhere, instantly</div>
+    </div>
+  </div>
+
+  <!-- 2. VALUE PROP -->
+  <div class="scene" id="scene-value">
+    <div id="value">
+      <div class="topo"></div>
+      <div class="eyebrow">Faraway</div>
+      <div class="hd">A place you describe.<br/>Then you go there.</div>
+      <div class="lede">Type where you want to be — a Greek balcony, a snowy cabin, Tokyo at 2 am. Faraway builds the sound and takes you there.</div>
+      <div class="actions">
+        <button class="btn" onclick="goto('ob-prompt')">Pick a place</button>
+        <div class="skip-link">I already have an account</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. ONBOARDING PROMPT (only diagnostic) -->
+  <div class="scene" id="scene-ob-prompt">
+    <div id="ob-prompt">
+      <div class="topo"></div>
+      <div class="eyebrow">★ The first place</div>
+      <div class="hd">Where do you<br/>want to go?</div>
+      <div class="lede">A place. Any place. Real or imagined. The more specific, the better.</div>
+      <div class="input-wrap">
+        <textarea id="ob-input" rows="3" placeholder="e.g. Greek island balcony, distant waves, cutlery clinking far away…"></textarea>
+      </div>
+      <div class="ideas-h">Or teleport to one of these</div>
+      <div class="ideas" id="ob-ideas"></div>
+      <button class="btn gen-btn-fixed" id="ob-gen-btn" disabled onclick="startOnboardGen()">Take me there</button>
+    </div>
+  </div>
+
+  <!-- 4. GOAL QUESTION (after prompt, before loader) -->
+  <div class="scene" id="scene-goal-q">
+    <div id="goal-q">
+      <div class="topo"></div>
+      <div class="topbar">
+        <span class="b" id="gq-back">← Back</span>
+        <span class="ctx" style="font-family:Fraunces,serif;font-style:italic;font-size:13px;opacity:.85">Setting up your trip</span>
+        <span style="width:36px"></span>
+      </div>
+      <div class="eyebrow">★ One last thing</div>
+      <div class="hd">What do you want<br/>to feel there?</div>
+      <div class="place-echo">Going to <b id="gq-place">Greek island balcony</b></div>
+      <div class="goals">
+        <div class="goal-opt sel" data-goal="relax"><div class="em">🌿</div><div class="body"><div class="nm">Relax</div><div class="desc">Unwind, decompress</div></div><div class="arrow">›</div></div>
+        <div class="goal-opt" data-goal="sleep"><div class="em">🌙</div><div class="body"><div class="nm">Sleep</div><div class="desc">Drift off, stay under</div></div><div class="arrow">›</div></div>
+        <div class="goal-opt" data-goal="focus"><div class="em">🎯</div><div class="body"><div class="nm">Focus</div><div class="desc">Deep work, no pull-outs</div></div><div class="arrow">›</div></div>
+        <div class="goal-opt" data-goal="meditate"><div class="em">🧘</div><div class="body"><div class="nm">Meditate</div><div class="desc">Be present, breathe slow</div></div><div class="arrow">›</div></div>
+        <div class="goal-opt" data-goal="escape"><div class="em">✦</div><div class="body"><div class="nm">Just escape</div><div class="desc">No goal, just somewhere else</div></div><div class="arrow">›</div></div>
+      </div>
+      <div class="cta-wrap"><button class="btn" id="gq-cta" onclick="confirmGoal()">Take me there</button></div>
+    </div>
+  </div>
+
+  <!-- 5. LOADER -->
+  <div class="scene" id="scene-loader">
+    <div id="loader">
+      <div class="topo"></div>
+      <div class="gen-rings"><div class="r"></div><div class="r"></div><div class="r"></div><div class="core"></div></div>
+      <div class="l-label" id="l-label">Building the place</div>
+      <div class="l-echo" id="l-echo">Greek island balcony…</div>
+      <div class="l-step" id="l-step">listening for the right sounds</div>
+    </div>
+  </div>
+
+  <!-- 5. PLAYER -->
+  <div class="scene" id="scene-player">
+    <div id="player">
+      <div class="grain"></div>
+      <div class="pt">
+        <div class="close" id="pl-close">×</div>
+        <div class="ctx" id="pl-ctx">Visiting</div>
+        <div class="more">···</div>
+      </div>
+      <div class="viz" id="pl-viz"></div>
+      <div class="ptitle">
+        <div class="eyebrow" id="pl-eyebrow">You're here</div>
+        <div class="title" id="pl-title">Greek island balcony</div>
+        <div class="sub" id="pl-sub"></div>
+      </div>
+      <div class="mix" id="pl-mix"></div>
+      <div class="insight" id="pl-insight">
+        <span class="ic">✦</span>
+        <div class="body" id="pl-insight-body"></div>
+        <span class="x" id="pl-insight-x">×</span>
+      </div>
+      <div class="timer-pill" id="pl-timer" style="display:none"><span class="dot"></span><span id="pl-timer-text"></span></div>
+      <div class="pcontrols">
+        <div class="pc" title="Tune">≡</div>
+        <div class="pc big" id="pl-play">❚❚</div>
+        <div class="pc heart" id="pl-heart">♥</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. ACCOUNT -->
+  <div class="scene" id="scene-account">
+    <div id="account">
+      <div class="topo"></div>
+      <div class="hd">Save the places<br/>you visit.</div>
+      <div class="lede">Sign in so your sounds and your Atlas follow you across devices.</div>
+      <div class="actions">
+        <button class="btn dark" onclick="goto('paywall')"> Continue with Apple</button>
+        <button class="btn ghost" onclick="goto('paywall')">Continue with Google</button>
+        <button class="btn ghost" onclick="goto('paywall')">Continue with Email</button>
+        <div class="legal">By continuing you agree to Terms & Privacy</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. PAYWALL -->
+  <div class="scene" id="scene-paywall">
+    <div id="paywall">
+      <div class="topo"></div>
+      <div class="x" onclick="enterHome()">×</div>
+      <div class="eyebrow">Faraway plus</div>
+      <div class="hd">Unlimited places.<br/>Forever.</div>
+      <div style="height:14px"></div>
+      <div class="feature"><div class="dot"></div>Unlimited prompts &amp; saved places</div>
+      <div class="feature"><div class="dot"></div>Sleep timer &amp; background play</div>
+      <div class="feature"><div class="dot"></div>Weekly Soundprint — the Atlas of your week</div>
+      <div class="feature"><div class="dot"></div>Full sound library — 300+ elements</div>
+      <div class="plan">
+        <div class="tag">SAVE 58%</div>
+        <div class="label">Annual · 7-day free trial</div>
+        <div class="price">$49.99 / year · $4.16 / mo</div>
+      </div>
+      <div style="text-align:center;color:var(--muted);font-size:13px;margin-top:12px;position:relative;z-index:2">Monthly · $9.99</div>
+      <div style="margin-top:auto;padding-top:14px;position:relative;z-index:2">
+        <button class="btn" onclick="enterHome()">Start free trial</button>
+      </div>
+      <div class="stars">★★★★★ 4.9 · 120k+ visits this month</div>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="scene" id="scene-home">
+    <div id="home">
+      <div class="cosmos" id="cosmos"></div>
+      <div class="greet" style="position:relative;z-index:2">
+        <div class="home-greet-coords">N 41° 24' · the atlas</div>
+        <div class="h">Good evening,<br/><span style="font-style:italic;color:var(--accent);font-family:Fraunces,serif">Roni.</span></div>
+        <div class="sub" id="home-sub">Tuesday · 9:41 pm · light rain outside</div>
+      </div>
+
+      <!-- THE HOOK -->
+      <div class="where-to atmos-night" id="where-to" onclick="goRecommended()">
+        <div class="corner-mark cm1"></div><div class="corner-mark cm2"></div>
+        <div class="corner-mark cm3"></div><div class="corner-mark cm4"></div>
+        <div class="grain"></div>
+        <div class="stars">
+          <span style="top:14%;left:20%"></span><span style="top:30%;left:65%;animation-delay:1s"></span>
+          <span style="top:50%;left:18%;animation-delay:1.6s"></span><span style="top:18%;left:80%;animation-delay:.7s"></span>
+        </div>
+        <div class="coord" id="t-coord">N 41° · 9:41 pm</div>
+        <div class="top"><span>★ Tonight's coordinates</span><span id="t-fresh">refreshed 6:00 pm</span></div>
+        <div class="body">
+          <div class="invite" id="t-invite">Made for this hour, this weather, you</div>
+          <div class="name" id="t-name">Rain on a tent</div>
+          <div class="why" id="t-why">It's raining outside — pair it with your top sleep place.</div>
+        </div>
+        <div class="go">▶</div>
+      </div>
+
+      <div class="compass-line">recent journeys</div>
+      <div class="recent" id="recent"></div>
+
+      <div class="compass-line">the worlds</div>
+      <div class="worlds">
+        <div class="world atmos-aqua" data-world="aqua"><div class="em">𓆡</div><div class="nm">Water</div></div>
+        <div class="world atmos-cozy" data-world="cozy"><div class="em">𖣘</div><div class="nm">Indoors</div></div>
+        <div class="world atmos-wild" data-world="wild"><div class="em">⛰</div><div class="nm">Wild</div></div>
+        <div class="world atmos-weather" data-world="weather"><div class="em">☁</div><div class="nm">Weather</div></div>
+        <div class="world atmos-night" data-world="night"><div class="em">☾</div><div class="nm">Night</div></div>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="tab active" data-tab="home"><div class="ic">⌂</div>Home</div>
+      <div class="tab" data-tab="atlas"><div class="ic">⊞</div>Atlas</div>
+      <div class="tab fab" data-tab="create">+</div>
+      <div class="tab" data-tab="soundprint"><div class="ic">◉</div>Soundprint</div>
+      <div class="tab" data-tab="you"><div class="ic">◔</div>You</div>
+    </div>
+  </div>
+
+  <!-- CREATE / NEW PLACE -->
+  <div class="scene" id="scene-create">
+    <div id="ob-prompt">
+      <div class="topo"></div>
+      <div class="topbar" style="margin-bottom:24px">
+        <span class="b" data-back>← Cancel</span>
+        <span class="ctx">New place</span>
+        <span style="width:36px"></span>
+      </div>
+      <div class="eyebrow">★ A new place</div>
+      <div class="hd">Where do you<br/>want to go?</div>
+      <div class="lede">Describe it. The more specific, the better.</div>
+      <div class="input-wrap">
+        <textarea id="cr-input" rows="3" placeholder="e.g. Old bookstore in Lisbon, soft footsteps, gentle rain outside…"></textarea>
+      </div>
+      <div class="ideas-h">Or teleport to one of these</div>
+      <div class="ideas" id="cr-ideas"></div>
+      <button class="btn gen-btn-fixed" id="cr-gen-btn" disabled onclick="startCreateGen()">Take me there</button>
+    </div>
+  </div>
+
+  <!-- ATLAS -->
+  <div class="scene" id="scene-atlas">
+    <div id="atlas">
+      <div class="topo"></div>
+      <h2>Atlas</h2>
+      <div class="sub">Every place, organized by world.</div>
+      <div class="atlas-section">
+        <div class="h"><span class="em">𓆡</span>Water<span class="count" style="margin-left:auto">12 places</span></div>
+        <div class="place-list">
+          <div class="place-row atmos-aqua" data-place="Greek island balcony"><div class="swatch"></div><div class="meta"><div class="nm">Greek island balcony</div><div class="desc">Distant waves · cutlery · breeze</div></div><div class="go">›</div></div>
+          <div class="place-row atmos-aqua" data-place="Lake at dawn"><div class="swatch"></div><div class="meta"><div class="nm">Lake at dawn</div><div class="desc">Soft lap · early birds · mist</div></div><div class="go">›</div></div>
+          <div class="place-row atmos-aqua" data-place="Pacific tide"><div class="swatch"></div><div class="meta"><div class="nm">Pacific tide</div><div class="desc">Long waves · low wind</div></div><div class="go">›</div></div>
+        </div>
+      </div>
+      <div class="atlas-section">
+        <div class="h"><span class="em">𖣘</span>Indoors<span class="count" style="margin-left:auto">18 places</span></div>
+        <div class="place-list">
+          <div class="place-row atmos-cozy" data-place="Cabin in a snowstorm"><div class="swatch"></div><div class="meta"><div class="nm">Cabin in a snowstorm</div><div class="desc">Fire · wind · creaking wood</div></div><div class="go">›</div></div>
+          <div class="place-row atmos-cozy" data-place="Old bookstore in Lisbon"><div class="swatch"></div><div class="meta"><div class="nm">Old bookstore in Lisbon</div><div class="desc">Page turns · footsteps · rain outside</div></div><div class="go">›</div></div>
+          <div class="place-row atmos-cozy" data-place="Tokyo hotel, 2am"><div class="swatch"></div><div class="meta"><div class="nm">Tokyo hotel, 2am</div><div class="desc">Rain · distant traffic · AC</div></div><div class="go">›</div></div>
+        </div>
+      </div>
+      <div class="atlas-section">
+        <div class="h"><span class="em">⛰</span>Wild<span class="count" style="margin-left:auto">14 places</span></div>
+        <div class="place-list">
+          <div class="place-row atmos-wild" data-place="Forest at dawn"><div class="swatch"></div><div class="meta"><div class="nm">Forest at dawn</div><div class="desc">Early birds · soft wind · dew</div></div><div class="go">›</div></div>
+          <div class="place-row atmos-wild" data-place="Mountain weather station"><div class="swatch"></div><div class="meta"><div class="nm">Mountain weather station</div><div class="desc">Wind · electronics · soft rain</div></div><div class="go">›</div></div>
+        </div>
+      </div>
+      <div class="atlas-section">
+        <div class="h"><span class="em">☁</span>Weather<span class="count" style="margin-left:auto">9 places</span></div>
+        <div class="place-list">
+          <div class="place-row atmos-weather" data-place="Rain on a tent"><div class="swatch"></div><div class="meta"><div class="nm">Rain on a tent</div><div class="desc">Soft rain · distant thunder · wind</div></div><div class="go">›</div></div>
+          <div class="place-row atmos-weather" data-place="Snow falling, no wind"><div class="swatch"></div><div class="meta"><div class="nm">Snow falling, no wind</div><div class="desc">Muffled stillness · soft crunch</div></div><div class="go">›</div></div>
+        </div>
+      </div>
+      <div class="atlas-section">
+        <div class="h"><span class="em">☾</span>Night<span class="count" style="margin-left:auto">11 places</span></div>
+        <div class="place-list">
+          <div class="place-row atmos-night" data-place="Train at night"><div class="swatch"></div><div class="meta"><div class="nm">Train at night</div><div class="desc">Steady rhythm · low hum · steel</div></div><div class="go">›</div></div>
+          <div class="place-row atmos-night" data-place="Empty street, 4am"><div class="swatch"></div><div class="meta"><div class="nm">Empty street, 4am</div><div class="desc">Distant car · soft wind · footsteps</div></div><div class="go">›</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="tab" data-tab="home"><div class="ic">⌂</div>Home</div>
+      <div class="tab active" data-tab="atlas"><div class="ic">⊞</div>Atlas</div>
+      <div class="tab fab" data-tab="create">+</div>
+      <div class="tab" data-tab="soundprint"><div class="ic">◉</div>Soundprint</div>
+      <div class="tab" data-tab="you"><div class="ic">◔</div>You</div>
+    </div>
+  </div>
+
+  <!-- SOUNDPRINT -->
+  <div class="scene" id="scene-soundprint">
+    <div id="soundprint">
+      <div class="topo"></div>
+      <div class="eyebrow">Week 19 · May 11–17</div>
+      <h2>The Atlas of<br/>your week.</h2>
+      <div class="sub">Five places. 14h 22m. ↑ 21% better sleep.</div>
+
+      <div class="week-map">
+        <div class="topo"></div>
+        <svg class="path" viewBox="0 0 390 300" preserveAspectRatio="none">
+          <path d="M 80,90 Q 180,40 280,80 T 160,210 T 310,225 T 200,270" stroke="rgba(232,200,150,.4)" stroke-width="1.5" fill="none" stroke-dasharray="3 4"/>
+        </svg>
+        <div class="pin" style="top:70px;left:60px"><div class="dot"></div><div class="lbl">Lake at dawn</div></div>
+        <div class="pin" style="top:60px;right:60px"><div class="dot"></div><div class="lbl">Cabin in snow</div></div>
+        <div class="pin" style="top:190px;left:120px"><div class="dot"></div><div class="lbl">Forest at dawn</div></div>
+        <div class="pin" style="top:210px;right:50px"><div class="dot"></div><div class="lbl">Train at night</div></div>
+        <div class="pin" style="bottom:30px;left:48%;transform:translateX(-50%)"><div class="dot"></div><div class="lbl">Rain on a tent</div></div>
+      </div>
+
+      <div class="sp-stats">
+        <div class="sp-stat"><div class="lbl">Places visited</div><div class="v">5</div><div class="sub">2 new this week</div></div>
+        <div class="sp-stat"><div class="lbl">Most returned to</div><div class="v">Rain on a tent</div><div class="sub">4 visits · longest stays</div></div>
+      </div>
+
+      <div class="visited-list">
+        <div class="visited atmos-weather"><div class="swatch"></div><div class="meta"><div class="nm">Rain on a tent</div><div class="when">Mon, Tue, Wed, Sun · 6h 12m</div></div><div class="freq">★★★★</div></div>
+        <div class="visited atmos-night"><div class="swatch"></div><div class="meta"><div class="nm">Train at night</div><div class="when">Tue · 1h 30m</div></div><div class="freq">★</div></div>
+        <div class="visited atmos-cozy"><div class="swatch"></div><div class="meta"><div class="nm">Cabin in a snowstorm</div><div class="when">Wed · 2h 04m</div></div><div class="freq">★</div></div>
+        <div class="visited atmos-aqua"><div class="swatch"></div><div class="meta"><div class="nm">Lake at dawn</div><div class="when">Thu · 1h 18m</div></div><div class="freq">★</div></div>
+        <div class="visited atmos-wild"><div class="swatch"></div><div class="meta"><div class="nm">Forest at dawn</div><div class="when">Sat · 3h 18m</div></div><div class="freq">★★</div></div>
+      </div>
+
+      <div class="sp-share"><button class="btn">Share your Atlas</button></div>
+    </div>
+    <div class="tabbar">
+      <div class="tab" data-tab="home"><div class="ic">⌂</div>Home</div>
+      <div class="tab" data-tab="atlas"><div class="ic">⊞</div>Atlas</div>
+      <div class="tab fab" data-tab="create">+</div>
+      <div class="tab active" data-tab="soundprint"><div class="ic">◉</div>Soundprint</div>
+      <div class="tab" data-tab="you"><div class="ic">◔</div>You</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="hint" id="hint"></div>
+
+<script>
+// ============ PLACE CATALOG ============
+// Each place has: name, atmos (visual class), sub (description), mix (sliders), insight (why this place works)
+const places = {
+  "Greek island balcony": {
+    atmos:"aqua",
+    sub:"Distant waves · cutlery · breeze · cicadas",
+    mix:[{nm:"Distant waves",ic:"🌊",v:65},{nm:"Cutlery clinks",ic:"🍴",v:38},{nm:"Warm breeze",ic:"🌬",v:52},{nm:"Cicadas",ic:"🦗",v:22,muted:true}],
+    insight:'<b>Water sounds outperformed wind for cortisol recovery</b> — distant surf drops stress markers faster than silence. <span class="src">Michels & Hamers · Environment & Behavior, 2023</span>'
+  },
+  "Lake at dawn": {
+    atmos:"aqua",
+    sub:"Soft lap · early birds · mist",
+    mix:[{nm:"Soft lap",ic:"〰",v:60},{nm:"Distant birds",ic:"🐦",v:40},{nm:"Mist",ic:"☁",v:25},{nm:"Wood creak",ic:"⛵",v:15,muted:true}],
+    insight:'<b>Bird sounds aid stress recovery</b> across multiple studies — the brain treats them as a safety signal. <span class="src">Ratcliffe et al. · J. Env. Psych, 2018</span>'
+  },
+  "Pacific tide": {
+    atmos:"aqua",
+    sub:"Long waves · low wind",
+    mix:[{nm:"Long waves",ic:"🌊",v:78},{nm:"Low wind",ic:"🌬",v:30},{nm:"Distant gulls",ic:"🐦",v:18,muted:true},{nm:"Foam",ic:"〰",v:22}],
+    insight:'<b>Natural sound exposure reduces stress and improves health outcomes</b> across 18 meta-analyzed trials. <span class="src">PNAS · 2021</span>'
+  },
+  "Cabin in a snowstorm": {
+    atmos:"cozy",
+    sub:"Fire · wind · creaking wood",
+    mix:[{nm:"Fire crackle",ic:"🔥",v:70},{nm:"Wind outside",ic:"🌬",v:45},{nm:"Wood creak",ic:"⛓",v:30},{nm:"Snow tap",ic:"❄",v:18,muted:true}],
+    insight:'<b>Low broadband sounds (like wind & fire) steady attention</b> by masking distracting intermittent noises. <span class="src">Brain.fm research, 2023</span>'
+  },
+  "Old bookstore in Lisbon": {
+    atmos:"cozy",
+    sub:"Page turns · footsteps · rain outside",
+    mix:[{nm:"Page turns",ic:"📖",v:50},{nm:"Footsteps",ic:"👞",v:30},{nm:"Soft hum",ic:"⌁",v:42},{nm:"Rain outside",ic:"☔",v:38}],
+    insight:'<b>Café-style sound has been shown to improve creative cognition</b> at moderate volume. <span class="src">Mehta et al. · J. Consumer Research, 2012</span>'
+  },
+  "Tokyo hotel, 2am": {
+    atmos:"cozy",
+    sub:"Rain · distant traffic · AC",
+    mix:[{nm:"Soft rain",ic:"☔",v:68},{nm:"Distant traffic",ic:"🚖",v:40},{nm:"AC hum",ic:"❄",v:55},{nm:"Elevator ding",ic:"🛗",v:8,muted:true}],
+    insight:'<b>Pink-noise pulses timed to deep-sleep brainwaves tripled overnight memory recall.</b> <span class="src">Papalambros et al. · Frontiers, 2017</span>'
+  },
+  "Forest at dawn": {
+    atmos:"wild",
+    sub:"Early birds · soft wind · dew",
+    mix:[{nm:"Bird chorus",ic:"🐦",v:62},{nm:"Soft wind",ic:"🌬",v:40},{nm:"Distant brook",ic:"〰",v:30},{nm:"Leaves",ic:"🍃",v:25}],
+    insight:'<b>Forest soundscapes improve mood and restoration</b> in controlled trials vs. urban sound. <span class="src">Scientific Reports, 2025</span>'
+  },
+  "Mountain weather station": {
+    atmos:"wild",
+    sub:"Wind · electronics · soft rain",
+    mix:[{nm:"Wind",ic:"🌬",v:70},{nm:"Electronics",ic:"⌁",v:35},{nm:"Soft rain",ic:"☔",v:45},{nm:"Tower creak",ic:"⛓",v:18,muted:true}],
+    insight:'<b>Steady broadband noise reduces the salience of distractions.</b> <span class="src">Brain.fm research</span>'
+  },
+  "Rain on a tent": {
+    atmos:"weather",
+    sub:"Soft rain · distant thunder · tent fabric · wind",
+    mix:[{nm:"Soft rain",ic:"☂",v:72},{nm:"Distant thunder",ic:"⚡",v:35},{nm:"Tent fabric",ic:"⛺",v:48},{nm:"Wind",ic:"🌬",v:12,muted:true}],
+    insight:'<b>Pink-noise pulses timed to deep-sleep brainwaves tripled overnight memory recall.</b> <span class="src">Papalambros et al. · Frontiers, 2017</span>'
+  },
+  "Snow falling, no wind": {
+    atmos:"weather",
+    sub:"Muffled stillness · soft crunch",
+    mix:[{nm:"Muffled tone",ic:"◌",v:60},{nm:"Soft crunch",ic:"❄",v:25},{nm:"Distant bell",ic:"🔔",v:15,muted:true},{nm:"Breath",ic:"🫁",v:18}],
+    insight:'<b>Slow, low-density sound mimics a parasympathetic "safe" environment.</b>'
+  },
+  "Train at night": {
+    atmos:"night",
+    sub:"Steady rhythm · low hum · steel",
+    mix:[{nm:"Steady clack",ic:"🚂",v:75},{nm:"Low hum",ic:"⌁",v:50},{nm:"Steel sway",ic:"⛓",v:35},{nm:"Announcer",ic:"📢",v:5,muted:true}],
+    insight:'<b>Rhythmic low-frequency sounds entrain breathing</b> toward slower rates associated with rest.'
+  },
+  "Empty street, 4am": {
+    atmos:"night",
+    sub:"Distant car · soft wind · footsteps",
+    mix:[{nm:"Distant car",ic:"🚖",v:35},{nm:"Soft wind",ic:"🌬",v:40},{nm:"Footsteps",ic:"👞",v:25},{nm:"Streetlight buzz",ic:"💡",v:18,muted:true}],
+    insight:'<b>Urban quietude with sparse cues</b> reduces hypervigilance vs. fully silent rooms.'
+  }
+};
+
+// idea chips per onboarding/create — mix of places
+const startIdeas = [
+  {e:"🌅", t:"Lake at dawn"},
+  {e:"🏖", t:"Greek island balcony"},
+  {e:"🔥", t:"Cabin in a snowstorm"},
+  {e:"📖", t:"Old bookstore in Lisbon"},
+  {e:"🌧", t:"Rain on a tent"},
+  {e:"🚂", t:"Train at night"},
+  {e:"🏨", t:"Tokyo hotel, 2am"},
+  {e:"🌲", t:"Forest at dawn"}
+];
+
+const atmosCores = {
+  aqua:"#9be6f3", cozy:"#ffd0a0", wild:"#b8e0b8", weather:"#a6b8e6", night:"#c8b8ff"
+};
+
+// ============ STATE ============
+let state = { placeName:"", atmos:null, playing:true, loved:false, lastVisited:[] };
+
+let _splashTimer = null;
+function goto(id){
+  document.querySelectorAll(".scene").forEach(s=>s.classList.remove("on"));
+  const el = document.getElementById("scene-"+id);
+  if (el) el.classList.add("on");
+  if (id==="home") setTimeout(()=>{ const h=document.getElementById("home"); if(h) h.scrollTop=0; },0);
+  if (id==="atlas") setTimeout(()=>{ const h=document.getElementById("atlas"); if(h) h.scrollTop=0; },0);
+  if (id==="soundprint") setTimeout(()=>{ const h=document.getElementById("soundprint"); if(h) h.scrollTop=0; },0);
+  // splash auto-advance — re-arms every time we land here
+  if (_splashTimer) { clearTimeout(_splashTimer); _splashTimer = null; }
+  if (id==="splash"){
+    _splashTimer = setTimeout(()=>{
+      if (document.getElementById("scene-splash").classList.contains("on")) goto("value");
+    }, 2400);
+  }
+}
+
+function hint(text){
+  const h = document.getElementById("hint");
+  h.textContent = text;
+  h.classList.add("show");
+  clearTimeout(window._h);
+  window._h = setTimeout(()=>h.classList.remove("show"), 2200);
+}
+
+// arm the initial splash timer (subsequent visits handled by goto)
+_splashTimer = setTimeout(()=>{
+  if (document.getElementById("scene-splash").classList.contains("on")) goto("value");
+}, 2400);
+// fallback: tap splash to advance manually
+document.getElementById("scene-splash").addEventListener("click", ()=>goto("value"));
+
+// build idea chips for onboarding + create
+function buildIdeas(containerId, inputId, btnId){
+  const el = document.getElementById(containerId);
+  el.innerHTML = "";
+  startIdeas.forEach(i=>{
+    const c = document.createElement("div");
+    c.className = "idea";
+    c.innerHTML = `<span class="e">${i.e}</span><span>${i.t}</span>`;
+    c.onclick = ()=>{
+      document.getElementById(inputId).value = i.t;
+      updateBtn(inputId, btnId);
+    };
+    el.appendChild(c);
+  });
+}
+buildIdeas("ob-ideas","ob-input","ob-gen-btn");
+buildIdeas("cr-ideas","cr-input","cr-gen-btn");
+
+function updateBtn(inputId, btnId){
+  document.getElementById(btnId).disabled = document.getElementById(inputId).value.trim().length < 3;
+}
+document.getElementById("ob-input").addEventListener("input", ()=>updateBtn("ob-input","ob-gen-btn"));
+document.getElementById("cr-input").addEventListener("input", ()=>updateBtn("cr-input","cr-gen-btn"));
+
+function lookupPlace(name){
+  if (places[name]) return { name, ...places[name] };
+  // unknown prompt: infer atmosphere from keywords
+  const n = name.toLowerCase();
+  let atmos = "night";
+  if (/(rain|thunder|snow|storm|fog)/.test(n)) atmos = "weather";
+  else if (/(sea|wave|ocean|lake|river|tide|beach|pond)/.test(n)) atmos = "aqua";
+  else if (/(forest|mountain|field|desert|wood|tree|prairie|tundra)/.test(n)) atmos = "wild";
+  else if (/(hotel|cabin|library|café|cafe|bookstore|room|home|kitchen|fire)/.test(n)) atmos = "cozy";
+  return {
+    name, atmos,
+    sub:"A place you described",
+    mix:[{nm:"Base ambience",ic:"◌",v:65},{nm:"Texture",ic:"〰",v:42},{nm:"Movement",ic:"🌬",v:30},{nm:"Detail",ic:"✦",v:18,muted:true}],
+    insight:'<b>Your imagined places get a soundscape grounded in the same acoustic patterns that reduce stress in real environments.</b> <span class="src">Stress · 2024 meta-analysis</span>'
+  };
+}
+
+function startOnboardGen(){
+  const txt = document.getElementById("ob-input").value.trim() || "Greek island balcony";
+  const p = lookupPlace(txt);
+  state.placeName = p.name; state.atmos = p.atmos; state._pending = p; state._afterPlayer = "account";
+  openGoalQ(p);
+}
+
+function startCreateGen(){
+  const txt = document.getElementById("cr-input").value.trim();
+  const p = lookupPlace(txt);
+  state.placeName = p.name; state.atmos = p.atmos; state._pending = p; state._afterPlayer = null;
+  openGoalQ(p);
+}
+
+function visitPlace(name){
+  const p = lookupPlace(name);
+  state.placeName = p.name; state.atmos = p.atmos; state._pending = p; state._afterPlayer = null;
+  openGoalQ(p);
+}
+
+function openGoalQ(p){
+  document.getElementById("gq-place").textContent = p.name;
+  // reset selection to relax
+  document.querySelectorAll(".goal-opt").forEach(o=>o.classList.remove("sel"));
+  const def = document.querySelector('.goal-opt[data-goal="relax"]');
+  if (def) def.classList.add("sel");
+  state._goal = "relax";
+  goto("goal-q");
+}
+
+function confirmGoal(){
+  const p = state._pending;
+  if (!p) return goto("home");
+  runLoader(p, ()=>{
+    setupPlayer(p);
+    goto("player");
+    if (state._afterPlayer === "account"){ state._next = "account"; state._afterPlayer = null; }
+  });
+}
+
+document.querySelectorAll(".goal-opt").forEach(o=>{
+  o.onclick = ()=>{
+    document.querySelectorAll(".goal-opt").forEach(x=>x.classList.remove("sel"));
+    o.classList.add("sel");
+    state._goal = o.dataset.goal;
+  };
+});
+document.getElementById("gq-back").onclick = ()=>{
+  // go back to wherever made sense
+  if (state._afterPlayer === "account") goto("ob-prompt");
+  else goto("home");
+};
+
+function runLoader(p, then){
+  goto("loader");
+  const ld = document.getElementById("loader");
+  ld.className = "atmos-"+p.atmos;
+  ld.id = "loader";
+  ld.style.setProperty("--ring-c", atmosCores[p.atmos]);
+  ld.style.setProperty("--core-c", atmosCores[p.atmos]);
+  document.getElementById("l-label").textContent = "Building the place";
+  document.getElementById("l-echo").textContent = p.name;
+  const steps = ["listening for the right sounds","tuning the layers","you're nearly there"];
+  let i = 0;
+  document.getElementById("l-step").textContent = steps[0];
+  const intv = setInterval(()=>{
+    i++;
+    if (i < steps.length) document.getElementById("l-step").textContent = steps[i];
+  }, 900);
+  setTimeout(()=>{ clearInterval(intv); then(); }, 2800);
+}
+
+function setupPlayer(p){
+  const pl = document.getElementById("player");
+  pl.className = "atmos-"+p.atmos;
+  pl.id = "player";
+
+  const goalLabels = {relax:"To relax", sleep:"To sleep", focus:"To focus", meditate:"To meditate", escape:"To escape"};
+  const ctxGoal = state._goal ? goalLabels[state._goal] : "Visiting";
+  document.getElementById("pl-ctx").textContent = ctxGoal + " · saved to Atlas";
+  const eyebrow = document.getElementById("pl-eyebrow");
+  eyebrow.className = "eyebrow " + p.atmos;
+  eyebrow.textContent = "You're here";
+
+  document.getElementById("pl-title").textContent = p.name;
+  document.getElementById("pl-sub").textContent = p.sub;
+
+  const viz = document.getElementById("pl-viz");
+  viz.className = "viz viz-"+p.atmos;
+  viz.innerHTML = vizHTML(p.atmos);
+
+  const mix = document.getElementById("pl-mix");
+  mix.innerHTML = "";
+  p.mix.forEach(s=>{
+    const row = document.createElement("div");
+    row.className = "srow" + (s.muted?" muted":"");
+    row.dataset.v = s.v;
+    row.innerHTML = `<div class="vbar" style="width:${s.v}%"></div><div class="knob" style="left:${s.v}%"></div><span class="ic">${s.ic}</span><span class="nm">${s.nm}</span><span class="pct">${s.v}</span>`;
+    attachSlider(row);
+    mix.appendChild(row);
+  });
+  const add = document.createElement("div");
+  add.className = "add-sound";
+  add.innerHTML = "＋ Add element";
+  add.onclick = ()=>hint("Opens the sound library");
+  mix.appendChild(add);
+
+  const insight = document.getElementById("pl-insight");
+  insight.classList.remove("show");
+  document.getElementById("pl-insight-body").innerHTML = p.insight;
+  setTimeout(()=>insight.classList.add("show"), 3500);
+
+  // contextual utility: show sleep timer if late
+  const hour = new Date().getHours();
+  const timer = document.getElementById("pl-timer");
+  if (hour >= 21 || hour < 5 || p.atmos === "night" || p.atmos === "weather"){
+    timer.style.display="flex";
+    document.getElementById("pl-timer-text").textContent = "Sleep timer · 1h 30m";
+  } else timer.style.display="none";
+
+  state.playing = true;
+  document.getElementById("pl-play").textContent = "❚❚";
+  state.loved = false;
+  document.getElementById("pl-heart").classList.remove("on");
+
+  recordVisit(p);
+}
+
+function vizHTML(atmos){
+  if (atmos==="aqua"){
+    let bubbles = "";
+    for (let i=0;i<8;i++){
+      bubbles += `<div class="bubble" style="left:${10+Math.random()*80}%;animation-delay:${Math.random()*8}s;animation-duration:${6+Math.random()*4}s"></div>`;
+    }
+    return `<div class="caustic"></div><div class="ray r1"></div><div class="ray r2"></div><div class="ray r3"></div><div class="wave w1"></div><div class="wave w2"></div><div class="wave w3"></div>${bubbles}`;
+  }
+  if (atmos==="cozy"){
+    let embers = "";
+    for (let i=0;i<10;i++){
+      embers += `<div class="ember" style="left:${30+Math.random()*40}%;animation-delay:${Math.random()*5}s;animation-duration:${4+Math.random()*3}s"></div>`;
+    }
+    return `<div class="glow"></div><div class="hearth"></div><div class="flame-tongue f1"></div><div class="flame-tongue f2"></div><div class="flame-tongue f3"></div>${embers}`;
+  }
+  if (atmos==="wild"){
+    return `<div class="sky-glow"></div><div class="wsun"></div><div class="cloud c1"></div><div class="cloud c2"></div><div class="mtn"></div><div class="mtn front"></div><div class="grass"></div>`;
+  }
+  if (atmos==="weather"){
+    let rain = "";
+    for (let i=0;i<14;i++){
+      rain += `<div class="rain near" style="left:${Math.random()*100}%;animation-delay:${Math.random()*1}s;animation-duration:${.7+Math.random()*.3}s"></div>`;
+    }
+    for (let i=0;i<14;i++){
+      rain += `<div class="rain mid" style="left:${Math.random()*100}%;animation-delay:${Math.random()*1.2}s;animation-duration:${1+Math.random()*.4}s"></div>`;
+    }
+    for (let i=0;i<14;i++){
+      rain += `<div class="rain far" style="left:${Math.random()*100}%;animation-delay:${Math.random()*1.4}s;animation-duration:${1.3+Math.random()*.5}s"></div>`;
+    }
+    return `<div class="stormcloud"></div><div class="lightning"></div>${rain}<div class="puddle"></div>`;
+  }
+  if (atmos==="night"){
+    let stars = "";
+    for (let i=0;i<28;i++){
+      const cls = ["s1","s2","s3","s4"][Math.floor(Math.random()*4)];
+      stars += `<span class="${cls}" style="top:${Math.random()*80+5}%;left:${Math.random()*90+3}%;animation-delay:${Math.random()*4}s"></span>`;
+    }
+    const lines = `<svg class="constellation" viewBox="0 0 120 80"><polyline points="10,20 35,15 55,35 80,25 100,50 75,65 40,55 20,70" stroke="rgba(255,255,255,.35)" stroke-width=".5" fill="none"/><circle cx="10" cy="20" r="1.5" fill="#fff"/><circle cx="35" cy="15" r="1.5" fill="#fff"/><circle cx="55" cy="35" r="1.5" fill="#fff"/><circle cx="80" cy="25" r="1.5" fill="#fff"/><circle cx="100" cy="50" r="1.5" fill="#fff"/><circle cx="75" cy="65" r="1.5" fill="#fff"/><circle cx="40" cy="55" r="1.5" fill="#fff"/><circle cx="20" cy="70" r="1.5" fill="#fff"/></svg>`;
+    return `<div class="aurora"></div><div class="nstars">${stars}</div>${lines}<div class="moon"></div><div class="shoot s1"></div><div class="shoot s2"></div>`;
+  }
+}
+
+// ====== COSMOS (home starfield) ======
+function buildCosmos(){
+  const el = document.getElementById("cosmos");
+  if (!el) return;
+  el.innerHTML = `<div class="galaxy"></div><div class="nebula-band"></div>`;
+  // dense star layer
+  for (let i=0;i<80;i++){
+    const cls = ["s1","s2","s3","s4"][Math.floor(Math.random()*4)];
+    const s = document.createElement("span");
+    s.className = "star "+cls;
+    s.style.top = (Math.random()*100)+"%";
+    s.style.left = (Math.random()*100)+"%";
+    s.style.animationDelay = (Math.random()*4)+"s";
+    s.style.animationDuration = (3+Math.random()*4)+"s";
+    el.appendChild(s);
+  }
+  // occasional shooting star
+  for (let i=0;i<2;i++){
+    const sh = document.createElement("div");
+    sh.className = "shooting";
+    sh.style.top = (10+Math.random()*40)+"%";
+    sh.style.left = (Math.random()*40)+"%";
+    sh.style.animationDelay = (i*4)+"s";
+    el.appendChild(sh);
+  }
+}
+
+function attachSlider(row){
+  let dragging = false;
+  function setFromEvent(e){
+    const rect = row.getBoundingClientRect();
+    const x = (e.touches? e.touches[0].clientX : e.clientX) - rect.left;
+    let pct = Math.round(Math.max(0,Math.min(100, x/rect.width*100)));
+    row.querySelector(".vbar").style.width = pct+"%";
+    row.querySelector(".knob").style.left = pct+"%";
+    row.querySelector(".pct").textContent = pct;
+    row.dataset.v = pct;
+    if (pct < 5) row.classList.add("muted"); else row.classList.remove("muted");
+  }
+  row.addEventListener("mousedown", e=>{ dragging=true; setFromEvent(e); });
+  row.addEventListener("touchstart", e=>{ dragging=true; setFromEvent(e); }, {passive:true});
+  window.addEventListener("mousemove", e=>{ if (dragging) setFromEvent(e); });
+  window.addEventListener("touchmove", e=>{ if (dragging) setFromEvent(e); }, {passive:true});
+  window.addEventListener("mouseup", ()=>dragging=false);
+  window.addEventListener("touchend", ()=>dragging=false);
+}
+
+document.getElementById("pl-insight-x").onclick = ()=>document.getElementById("pl-insight").classList.remove("show");
+document.getElementById("pl-play").onclick = ()=>{
+  state.playing = !state.playing;
+  document.getElementById("pl-play").textContent = state.playing ? "❚❚" : "▶";
+};
+document.getElementById("pl-heart").onclick = ()=>{
+  state.loved = !state.loved;
+  document.getElementById("pl-heart").classList.toggle("on", state.loved);
+  hint(state.loved ? "Saved to your Atlas" : "Removed");
+};
+document.getElementById("pl-close").onclick = ()=>{
+  if (state._next === "account"){ state._next=null; goto("account"); }
+  else enterHome();
+};
+document.getElementById("pl-timer").onclick = ()=>hint("Sleep timer: 1h 30m");
+
+document.querySelectorAll("[data-back]").forEach(el=>{
+  el.onclick = ()=>goto("home");
+});
+
+// ============ HOME ============
+function enterHome(){
+  if (state.lastVisited.length === 0 && state.placeName){
+    recordVisit({name:state.placeName, atmos:state.atmos});
+  }
+  if (state.lastVisited.length === 0){
+    state.lastVisited = [
+      {name:"Rain on a tent", atmos:"weather", when:"2h ago"},
+      {name:"Train at night", atmos:"night", when:"Mon"},
+      {name:"Cabin in a snowstorm", atmos:"cozy", when:"Sun"}
+    ];
+  }
+  renderRecent();
+  setupWhereTo();
+  buildCosmos();
+  goto("home");
+}
+
+function recordVisit(item){
+  const it = {name:item.name, atmos:item.atmos, when:"Just now"};
+  state.lastVisited = [it, ...state.lastVisited.filter(p => p.name !== it.name)].slice(0,6);
+  renderRecent();
+}
+
+function renderRecent(){
+  const el = document.getElementById("recent");
+  if (!el) return;
+  el.innerHTML = "";
+  state.lastVisited.forEach(p=>{
+    const t = document.createElement("div");
+    t.className = `place-tile atmos-${p.atmos}`;
+    t.innerHTML = `<div class="art"></div><div class="nm">${p.name}</div><div class="when">${p.when || ""}</div>`;
+    t.onclick = ()=>visitPlace(p.name);
+    el.appendChild(t);
+  });
+}
+
+function setupWhereTo(){
+  const hour = new Date().getHours();
+  let rec;
+  if (hour >= 21 || hour < 6) rec = {name:"Rain on a tent", atmos:"weather", invite:"Made for tonight, the rain, the hour", why:"It's late and raining outside — pair it with your top sleep place."};
+  else if (hour >= 6 && hour < 11) rec = {name:"Lake at dawn", atmos:"aqua", invite:"For the start of the day", why:"Slow water + early birds — easier to ease in."};
+  else if (hour >= 11 && hour < 17) rec = {name:"Old bookstore in Lisbon", atmos:"cozy", invite:"For the middle of the day", why:"Paired with focus — your most-returned-to weekday spot."};
+  else rec = {name:"Greek island balcony", atmos:"aqua", invite:"For the slow end of the day", why:"Distant water + cutlery — your evening unwind go-to."};
+
+  // override if a favourite already exists for this hour band
+  const favForHour = state.lastVisited.find(p => p.atmos === rec.atmos);
+  if (favForHour) rec.name = favForHour.name;
+
+  const w = document.getElementById("where-to");
+  w.className = "where-to atmos-"+rec.atmos;
+  document.getElementById("t-invite").textContent = rec.invite;
+  document.getElementById("t-name").textContent = rec.name;
+  document.getElementById("t-why").textContent = rec.why;
+  state._tonight = rec;
+}
+
+function goRecommended(){
+  if (state._tonight) visitPlace(state._tonight.name);
+}
+function goAtlas(){ goto("atlas"); }
+
+document.querySelectorAll("[data-world]").forEach(w=>{
+  w.onclick = ()=>{ goto("atlas"); setTimeout(()=>{
+    const el = document.querySelector(".atlas-section");
+    if (el) el.scrollIntoView({behavior:"smooth"});
+  }, 100); };
+});
+
+document.querySelectorAll("[data-place]").forEach(p=>{
+  p.onclick = ()=>visitPlace(p.dataset.place);
+});
+
+document.querySelectorAll("[data-tab]").forEach(t=>{
+  t.onclick = ()=>{
+    const id = t.dataset.tab;
+    if (id==="home") goto("home");
+    else if (id==="atlas") goto("atlas");
+    else if (id==="create") goto("create");
+    else if (id==="soundprint") goto("soundprint");
+    else hint(`${id[0].toUpperCase()+id.slice(1)} — coming soon`);
+  };
+});
+
+// Dev controls
+document.getElementById("reset-onboard").onclick = ()=>{
+  state = { placeName:"", atmos:null, playing:true, loved:false, lastVisited:[] };
+  document.getElementById("ob-input").value="";
+  document.getElementById("ob-gen-btn").disabled = true;
+  goto("splash");
+};
+document.getElementById("skip-to-home").onclick = ()=>enterHome();
+</script>
+
+</body>
+</html>

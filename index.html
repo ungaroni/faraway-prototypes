@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Faraway · prototypes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,200;9..144,300;9..144,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(ellipse at top,#16111e,#050407 60%);color:#f5f3ef;font-family:"Inter",system-ui,sans-serif;min-height:100vh;padding:64px 24px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:720px;margin:0 auto}
+  h1{font-family:"Fraunces",serif;font-weight:200;font-size:54px;letter-spacing:-.02em;margin:0;line-height:1}
+  .lead{color:#8b8794;font-size:15px;line-height:1.6;margin:14px 0 40px;max-width:540px}
+  .grid{display:flex;flex-direction:column;gap:14px}
+  a.card{display:block;padding:24px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);text-decoration:none;color:inherit;transition:all .15s ease}
+  a.card:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.18);transform:translateY(-2px)}
+  .tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;padding:3px 8px;border-radius:6px;margin-bottom:10px}
+  .tag.v1{background:rgba(139,92,246,.15);color:#a78bfa}
+  .tag.v2{background:rgba(155,230,243,.15);color:#9be6f3}
+  .tag.v3{background:rgba(232,200,150,.15);color:#e8c896}
+  h2{font-family:"Fraunces",serif;font-weight:300;font-size:24px;margin:0 0 6px;letter-spacing:-.01em}
+  .desc{color:#8b8794;font-size:13px;line-height:1.5}
+  .arr{float:right;margin-top:-32px;color:#8b8794;font-size:20px}
+  footer{margin-top:48px;color:#8b8794;font-size:12px;font-style:italic;font-family:"Fraunces",serif}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Faraway prototypes</h1>
+  <p class="lead">Three concept directions for the ambient-sound app. Each one is a working interactive prototype — pick a flow, tap through it on desktop or mobile.</p>
+  <div class="grid">
+    <a class="card" href="v1.html">
+      <span class="tag v1">v1 · mood</span>
+      <h2>Mood-based</h2>
+      <div class="desc">Onboarding with goal pick (Sleep / Focus / Relax / Meditate), mood-organized library, end-of-session reflection.</div>
+      <div class="arr">→</div>
+    </a>
+    <a class="card" href="v2.html">
+      <span class="tag v2">v2 · strategy applied</span>
+      <h2>Tighter onboarding + retention loop</h2>
+      <div class="desc">8-screen onboarding, "Tonight's sound" daily hook on home, Insights tab with weekly Soundprint, end-of-session reflection.</div>
+      <div class="arr">→</div>
+    </a>
+    <a class="card" href="v3.html">
+      <span class="tag v3">v3 · teleport</span>
+      <h2>Place-based atlas</h2>
+      <div class="desc">"Where do you want to go?" — places not moods. Cosmic starfield home, atlas worlds (Aqua / Cozy / Wild / Weather / Night), live atmosphere-specific animations in the player, weekly Soundprint as a map of your journeys.</div>
+      <div class="arr">→</div>
+    </a>
+  </div>
+  <footer>Best on desktop or mobile Safari/Chrome. Restart each prototype with the "Restart onboarding" link at the top.</footer>
+</div>
+</body>
+</html>

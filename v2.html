@@ -1,0 +1,1121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Faraway · v2 prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0a0e; --panel:#15131c; --panel-2:#1d1a26; --text:#f5f3ef; --muted:#8b8794;
+    --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.18);
+    --accent:#a78bfa;
+    --sleep-1:#0b1437;  --sleep-2:#1e2156;  --sleep-3:#3b3b8a;  --sleep-accent:#a7b6ff;
+    --focus-1:#06212a;  --focus-2:#0a3d4a;  --focus-3:#1c6d7d;  --focus-accent:#9be6f3;
+    --relax-1:#3a1206;  --relax-2:#7a2a10;  --relax-3:#c46a32;  --relax-accent:#ffc89a;
+    --med-1:#1a2218;    --med-2:#2e3a2a;    --med-3:#5a6b4f;    --med-accent:#d4e5b8;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#050407;color:var(--text);font-family:"Inter",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+  body{display:flex;flex-direction:column;align-items:center;padding:32px 0 80px;background:radial-gradient(ellipse at top,#16111e,#050407 60%)}
+  .top{text-align:center;margin-bottom:20px;max-width:640px;padding:0 24px}
+  .top .badge{display:inline-block;padding:4px 10px;border-radius:999px;background:rgba(167,139,250,.15);color:var(--accent);font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px}
+  .top h1{font-family:"Fraunces",serif;font-weight:300;font-size:28px;letter-spacing:-.02em;margin:0}
+  .top p{color:var(--muted);font-size:13px;margin:6px 0 0;line-height:1.5}
+  .controls{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+  .ctl{padding:7px 14px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;user-select:none}
+  .ctl:hover{color:var(--text);border-color:var(--line-2)}
+
+  .phone{position:relative;width:390px;height:844px;border-radius:46px;background:#000;overflow:hidden;box-shadow:0 60px 120px -30px rgba(0,0,0,.8),0 0 0 12px #1a181f,0 0 0 13px rgba(255,255,255,.06)}
+  .notch{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:120px;height:30px;background:#000;border-radius:20px;z-index:80}
+  .status{position:absolute;top:18px;left:28px;font-size:14px;font-weight:600;z-index:70;color:#fff;mix-blend-mode:difference}
+  .status-r{position:absolute;top:18px;right:28px;font-size:13px;font-weight:600;z-index:70;color:#fff;mix-blend-mode:difference}
+  .home-indicator{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:120px;height:4px;background:rgba(255,255,255,.5);border-radius:2px;z-index:80}
+
+  .scene{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .4s ease;display:flex;flex-direction:column;overflow:hidden}
+  .scene.on{opacity:1;pointer-events:auto}
+  .grain{position:absolute;inset:0;pointer-events:none;opacity:.4;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+
+  .btn{display:flex;align-items:center;justify-content:center;height:54px;border-radius:999px;background:#fff;color:#0b0a0e;font-weight:600;font-size:15px;border:0;width:100%;cursor:pointer;transition:opacity .2s}
+  .btn:disabled{opacity:.3;cursor:not-allowed}
+  .btn.ghost{background:transparent;border:1px solid var(--line-2);color:var(--text)}
+  .btn.dark{background:#fff;color:#000}
+  .skip-link{text-align:center;margin-top:14px;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer}
+  .skip-link:hover{color:var(--text)}
+  .topbar{display:flex;justify-content:space-between;align-items:center;color:#fff;font-size:14px;font-weight:500}
+  .topbar .b{cursor:pointer;opacity:.8}
+  .topbar .ctx{font-family:"Fraunces",serif;font-style:italic;font-size:13px;opacity:.85}
+
+  /* SPLASH */
+  #splash{padding:0;background:radial-gradient(circle at 50% 50%,#1c1a2c,#050407 70%);display:grid;place-items:center;height:100%;position:relative}
+  #splash .glow{position:absolute;width:480px;height:480px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.45),transparent 60%);filter:blur(40px);animation:pulse-g 4s ease-in-out infinite}
+  @keyframes pulse-g{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.1);opacity:1}}
+  #splash .wordmark{font-family:"Fraunces",serif;font-weight:300;font-size:48px;letter-spacing:-.02em;color:#fff;position:relative}
+
+  /* VALUE PROP */
+  #value{padding:80px 30px 40px;background:radial-gradient(circle at 50% 0%,#1c1a2c,#0b0a0e 70%);display:flex;flex-direction:column;height:100%;position:relative}
+  #value .eyebrow{font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.18em;text-transform:uppercase;margin-top:auto}
+  #value .hd{font-family:"Fraunces",serif;font-weight:300;font-size:38px;letter-spacing:-.02em;line-height:1.05;color:#fff;margin-top:14px}
+  #value .lede{color:var(--muted);font-size:15px;line-height:1.5;margin-top:18px}
+  #value .actions{margin-top:auto;padding-top:32px}
+
+  /* GOAL — the primary nav forever */
+  #goal{padding:80px 24px 40px;background:radial-gradient(circle at 50% 0%,#1c1a2c,#0b0a0e 70%);height:100%;display:flex;flex-direction:column}
+  #goal .eyebrow{font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.18em;text-transform:uppercase}
+  #goal .hd{font-family:"Fraunces",serif;font-weight:300;font-size:26px;letter-spacing:-.02em;line-height:1.1;margin-top:8px}
+  #goal .lede{color:var(--muted);font-size:13px;margin-top:8px}
+  .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+  .mcard{position:relative;height:155px;border-radius:22px;overflow:hidden;padding:18px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:transform .15s ease;border:1px solid transparent}
+  .mcard:hover{transform:translateY(-2px)}
+  .mcard.sel{border-color:rgba(255,255,255,.5);box-shadow:0 0 0 1px rgba(255,255,255,.2)}
+  .mcard .em{font-size:22px;z-index:2;position:relative;opacity:.9}
+  .mcard .body{z-index:2;position:relative}
+  .mcard .nm{font-family:"Fraunces",serif;font-weight:300;font-size:22px;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.4)}
+  .mcard .sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;letter-spacing:.04em}
+  .mcard .glow{position:absolute;width:140px;height:140px;border-radius:50%;filter:blur(40px);opacity:.7}
+  .mcard.sleep{background:radial-gradient(ellipse at 70% 30%,var(--sleep-3),var(--sleep-1))}
+  .mcard.sleep .glow{background:#7c83ff;right:-30px;top:-30px}
+  .mcard.focus{background:radial-gradient(ellipse at 30% 30%,var(--focus-3),var(--focus-1))}
+  .mcard.focus .glow{background:#5dd5e8;left:-30px;top:-30px}
+  .mcard.relax{background:radial-gradient(ellipse at 80% 80%,var(--relax-3),var(--relax-1))}
+  .mcard.relax .glow{background:#ff9d5b;right:-30px;bottom:-30px}
+  .mcard.meditate{background:radial-gradient(ellipse at 50% 100%,var(--med-3),var(--med-1))}
+  .mcard.meditate .glow{background:#a4cf7c;left:-30px;bottom:-30px}
+  .cta-wrap{margin-top:auto;padding-top:20px}
+
+  /* DIAGNOSTIC */
+  #diag{padding:80px 24px 40px;background:radial-gradient(circle at 50% 0%,#1c1a2c,#0b0a0e 70%);height:100%;display:flex;flex-direction:column}
+  #diag .eyebrow{font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.18em;text-transform:uppercase}
+  #diag .hd{font-family:"Fraunces",serif;font-weight:300;font-size:26px;letter-spacing:-.02em;line-height:1.1;margin-top:8px}
+  #diag .lede{color:var(--muted);font-size:13px;margin-top:8px}
+  .opts{margin-top:20px}
+  .opt{display:flex;align-items:center;justify-content:space-between;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 18px;font-size:14px;font-weight:500;margin-bottom:8px;cursor:pointer}
+  .opt.sel{background:rgba(167,139,250,.16);border-color:var(--accent)}
+  .opt .check{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line-2);display:grid;place-items:center;color:#fff;font-size:11px}
+  .opt.sel .check{background:var(--accent);border-color:var(--accent)}
+
+  /* PROMPT */
+  #prompt{padding:80px 28px 40px;transition:background .6s ease;height:100%;display:flex;flex-direction:column;position:relative}
+  #prompt.sleep-bg{background:radial-gradient(circle at 50% 0%,var(--sleep-2),#0b0a0e 70%)}
+  #prompt.focus-bg{background:radial-gradient(circle at 50% 0%,var(--focus-2),#0b0a0e 70%)}
+  #prompt.relax-bg{background:radial-gradient(circle at 50% 0%,var(--relax-2),#0b0a0e 70%)}
+  #prompt.meditate-bg{background:radial-gradient(circle at 50% 0%,var(--med-2),#0b0a0e 70%)}
+  #prompt .magic{font-family:"Fraunces",serif;font-style:italic;font-size:13px;color:var(--accent);margin-top:20px}
+  #prompt .hd{font-family:"Fraunces",serif;font-weight:300;font-size:30px;letter-spacing:-.02em;line-height:1.05;margin-top:8px;color:#fff}
+  #prompt .lede{color:rgba(255,255,255,.65);font-size:13px;margin-top:8px;line-height:1.5}
+  .input-wrap{margin-top:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:18px;backdrop-filter:blur(10px)}
+  .input-wrap textarea{width:100%;border:0;outline:0;background:transparent;color:#fff;font-family:"Inter",sans-serif;font-size:15px;line-height:1.5;resize:none;min-height:80px}
+  .input-wrap textarea::placeholder{color:rgba(255,255,255,.4)}
+  .ideas-h{font-family:"Fraunces",serif;font-style:italic;font-size:13px;color:rgba(255,255,255,.65);margin:18px 0 8px}
+  .ideas{display:flex;flex-wrap:wrap;gap:8px}
+  .idea{padding:8px 13px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);color:#fff;font-size:12px;font-weight:500;cursor:pointer;backdrop-filter:blur(6px)}
+  .idea:hover{background:rgba(255,255,255,.13)}
+  .gen-btn-fixed{position:absolute;bottom:40px;left:28px;right:28px}
+
+  /* LOADER */
+  #loader{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 28px;height:100%}
+  #loader.sleep-bg{background:radial-gradient(circle at 50% 50%,var(--sleep-2),#0b0a0e 70%)}
+  #loader.focus-bg{background:radial-gradient(circle at 50% 50%,var(--focus-2),#0b0a0e 70%)}
+  #loader.relax-bg{background:radial-gradient(circle at 50% 50%,var(--relax-2),#0b0a0e 70%)}
+  #loader.meditate-bg{background:radial-gradient(circle at 50% 50%,var(--med-2),#0b0a0e 70%)}
+  .gen-rings{position:relative;width:240px;height:240px;display:grid;place-items:center;margin-bottom:28px}
+  .gen-rings .r{position:absolute;border:1px solid var(--ring-c,#a78bfa);border-radius:50%;animation:gring 3s ease-out infinite}
+  .gen-rings .r:nth-child(1){width:80px;height:80px;opacity:.7}
+  .gen-rings .r:nth-child(2){width:150px;height:150px;animation-delay:.6s;opacity:.45}
+  .gen-rings .r:nth-child(3){width:220px;height:220px;animation-delay:1.2s;opacity:.25}
+  .gen-rings .core{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,var(--core-c,#a78bfa),transparent 70%);filter:blur(8px)}
+  @keyframes gring{0%{transform:scale(.6);opacity:.8}100%{transform:scale(1.4);opacity:0}}
+  .l-label{font-family:"Fraunces",serif;font-style:italic;color:rgba(255,255,255,.7);font-size:14px}
+  .l-echo{font-family:"Fraunces",serif;font-weight:300;font-size:20px;color:#fff;line-height:1.3;margin-top:8px;text-align:center;max-width:300px}
+
+  /* PLAYER */
+  #player{display:flex;flex-direction:column;color:#fff;position:relative;height:100%}
+  #player.sleep{background:radial-gradient(ellipse at 50% 0%, #1b1f55 0%, #0b1437 50%, #050410 100%)}
+  #player.focus{background:radial-gradient(ellipse at 50% 0%, #0c4858 0%, #06212a 60%, #03161c 100%)}
+  #player.relax{background:radial-gradient(ellipse at 50% 0%, #862e10 0%, #3a1206 60%, #1a0805 100%)}
+  #player.meditate{background:radial-gradient(ellipse at 50% 30%, #3b4d33 0%, #1a2218 60%, #0a0d08 100%)}
+  .pt{display:flex;justify-content:space-between;align-items:center;padding:60px 28px 0;font-size:14px;font-weight:500;opacity:.85;z-index:30;position:relative}
+  .pt .close,.pt .more{cursor:pointer}
+  .pt .close{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.08);display:grid;place-items:center;font-size:14px;backdrop-filter:blur(10px)}
+  .pt .ctx{font-family:"Fraunces",serif;font-style:italic;font-size:12px}
+  .pt .more{font-size:18px;color:rgba(255,255,255,.7)}
+  .viz{position:relative;height:240px;display:grid;place-items:center;margin-top:6px}
+  .viz-sleep .nebula{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#7a85d6 0%,#3b3b8a 30%,transparent 70%);filter:blur(20px);opacity:.7;animation:drift 14s ease-in-out infinite}
+  .viz-sleep .moon{position:absolute;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#dfe2ff 40%,#8e96d6 90%);box-shadow:0 0 60px rgba(167,182,255,.5),0 0 120px rgba(167,182,255,.25);animation:breathe 7s ease-in-out infinite}
+  .viz-sleep .stars span{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;box-shadow:0 0 4px #fff;animation:twinkle 4s ease-in-out infinite}
+  @keyframes drift{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(8px,-6px) scale(1.04)}}
+  @keyframes breathe{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.03);opacity:.92}}
+  @keyframes twinkle{0%,100%{opacity:.3}50%{opacity:1}}
+  .viz-focus{flex-direction:column;gap:14px}
+  .viz-focus .lines{position:relative;width:88%;height:140px}
+  .viz-focus .ln{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#9be6f3 50%,transparent)}
+  .viz-focus .ln.a{top:30%;animation:wave 6s ease-in-out infinite;opacity:.6}
+  .viz-focus .ln.b{top:48%;animation:wave 7s ease-in-out infinite reverse;opacity:.4}
+  .viz-focus .ln.c{top:66%;animation:wave 8s ease-in-out infinite;opacity:.3}
+  .viz-focus .pillar{width:1px;height:70px;background:linear-gradient(180deg,transparent,#9be6f3,transparent);opacity:.6;animation:breathe 5s ease-in-out infinite}
+  @keyframes wave{0%,100%{transform:translateX(0) scaleY(1)}50%{transform:translateX(6px) scaleY(1.5)}}
+  .viz-relax .orb{position:relative;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffd4a6,#c46a32 50%,#7a2a10 80%);box-shadow:0 0 80px rgba(255,157,91,.5);animation:breathe 6s ease-in-out infinite}
+  .viz-relax .rip{position:absolute;border:1px solid rgba(255,200,154,.4);border-radius:50%;width:210px;height:210px;animation:ripple 4s ease-out infinite}
+  .viz-relax .rip.b{animation-delay:1.3s}
+  .viz-relax .rip.c{animation-delay:2.6s}
+  @keyframes ripple{0%{transform:scale(.6);opacity:.8}100%{transform:scale(1.7);opacity:0}}
+  .viz-med{flex-direction:column}
+  .viz-med .breath-wrap{position:relative;width:190px;height:190px;display:grid;place-items:center}
+  .viz-med .breath{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,#d4e5b8,#5a6b4f);box-shadow:0 0 60px rgba(212,229,184,.3);animation:slowbreath 10s ease-in-out infinite}
+  .viz-med .breath-label{font-family:"Fraunces",serif;font-style:italic;font-size:13px;opacity:.6;margin-top:8px}
+  @keyframes slowbreath{0%,100%{transform:scale(1)}50%{transform:scale(2.4)}}
+  .ptitle{text-align:center;padding:10px 28px 4px;position:relative;z-index:5}
+  .ptitle .eyebrow{font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;opacity:.85}
+  .ptitle .eyebrow.sleep{color:var(--sleep-accent)}
+  .ptitle .eyebrow.focus{color:var(--focus-accent)}
+  .ptitle .eyebrow.relax{color:var(--relax-accent)}
+  .ptitle .eyebrow.med{color:var(--med-accent)}
+  .ptitle .title{font-family:"Fraunces",serif;font-weight:300;font-size:22px;margin-top:4px;line-height:1.15}
+  .ptitle .sub{color:rgba(255,255,255,.55);font-size:11px;margin-top:4px;font-style:italic;font-family:"Fraunces",serif}
+  .mix{padding:10px 24px 8px}
+  .srow{display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:6px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden;cursor:pointer;user-select:none}
+  .srow.muted{opacity:.45}
+  .srow .ic{font-size:14px;width:18px;text-align:center;flex:0 0 18px;opacity:.85;z-index:2}
+  .srow .nm{flex:1;font-size:13px;font-weight:500;z-index:2}
+  .srow .vbar{position:absolute;left:0;top:0;bottom:0;pointer-events:none;border-radius:14px;transition:width .08s linear}
+  .srow.sleep .vbar{background:linear-gradient(90deg,rgba(167,182,255,.22),rgba(167,182,255,.08))}
+  .srow.focus .vbar{background:linear-gradient(90deg,rgba(155,230,243,.22),rgba(155,230,243,.08))}
+  .srow.relax .vbar{background:linear-gradient(90deg,rgba(255,200,154,.22),rgba(255,200,154,.08))}
+  .srow.med .vbar{background:linear-gradient(90deg,rgba(212,229,184,.22),rgba(212,229,184,.08))}
+  .srow .knob{position:absolute;top:50%;width:2px;height:60%;transform:translate(-1px,-50%);border-radius:1px;pointer-events:none;transition:left .08s linear}
+  .srow.sleep .knob{background:var(--sleep-accent)}
+  .srow.focus .knob{background:var(--focus-accent)}
+  .srow.relax .knob{background:var(--relax-accent)}
+  .srow.med .knob{background:var(--med-accent)}
+  .srow .pct{font-size:10px;font-weight:600;color:rgba(255,255,255,.5);font-variant-numeric:tabular-nums;z-index:2;width:24px;text-align:right}
+  .add-sound{display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:14px;border:1px dashed rgba(255,255,255,.18);font-size:12px;font-weight:500;color:rgba(255,255,255,.55);margin-top:4px;cursor:pointer}
+  .insight{margin:10px 24px 0;padding:13px 16px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;gap:10px;align-items:flex-start;transform:translateY(8px);opacity:0;transition:all .5s ease}
+  .insight.show{transform:translateY(0);opacity:1}
+  .insight .ic{font-size:13px;margin-top:1px}
+  .insight .body{flex:1;font-size:11.5px;line-height:1.45;color:rgba(255,255,255,.75)}
+  .insight .body b{color:#fff;font-weight:600}
+  .insight .body .src{display:block;color:rgba(255,255,255,.4);font-size:9.5px;margin-top:4px;font-style:italic}
+  .insight .x{color:rgba(255,255,255,.4);font-size:13px;cursor:pointer;line-height:1}
+  .pcontrols{position:absolute;bottom:36px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:0 50px;z-index:40}
+  .pc{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.08);display:grid;place-items:center;font-size:15px;color:#fff;backdrop-filter:blur(10px);cursor:pointer}
+  .pc.big{width:70px;height:70px;background:rgba(255,255,255,.95);color:#0b0a0e;font-size:20px;box-shadow:0 16px 40px -10px rgba(255,255,255,.3)}
+  .pc.heart{color:#ff7a90;font-size:17px}
+  .pc.heart.on{color:#ff5577}
+  .timer-pill{position:absolute;bottom:125px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:6px 13px;border-radius:999px;font-size:11px;font-weight:600;color:rgba(255,255,255,.8);display:flex;gap:6px;align-items:center;z-index:40}
+  .timer-pill .dot{width:5px;height:5px;background:#ff7a90;border-radius:50%}
+
+  /* ACCOUNT */
+  #account{padding:80px 28px 40px;background:radial-gradient(circle at 50% 0%,#1c1a2c,#0b0a0e 70%);height:100%;display:flex;flex-direction:column}
+  #account .hd{font-family:"Fraunces",serif;font-weight:300;font-size:28px;letter-spacing:-.02em;line-height:1.1;margin-top:auto}
+  #account .lede{color:var(--muted);font-size:14px;line-height:1.5;margin-top:10px}
+  #account .actions{margin-top:auto;padding-top:24px;display:flex;flex-direction:column;gap:10px}
+  #account .legal{text-align:center;color:var(--muted);font-size:10px;margin-top:14px}
+
+  /* PAYWALL */
+  #paywall{padding:80px 28px 40px;background:radial-gradient(circle at 50% 0%,#1c1a2c,#0b0a0e 70%);height:100%;display:flex;flex-direction:column;position:relative}
+  #paywall .x{position:absolute;top:54px;right:24px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.06);display:grid;place-items:center;color:var(--muted);font-size:16px;cursor:pointer}
+  #paywall .eyebrow{font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.18em;text-transform:uppercase}
+  #paywall .hd{font-family:"Fraunces",serif;font-weight:300;font-size:26px;letter-spacing:-.02em;line-height:1.1;margin-top:6px}
+  .feature{display:flex;align-items:center;gap:12px;margin:7px 0;font-size:13px;font-weight:500}
+  .feature .dot{width:6px;height:6px;background:var(--accent);border-radius:50%}
+  .plan{background:rgba(167,139,250,.16);border:1px solid var(--accent);border-radius:18px;padding:14px 16px;position:relative;margin-top:14px}
+  .plan .tag{position:absolute;right:14px;top:14px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:4px 8px;border-radius:6px}
+  .plan .label{font-size:13px;font-weight:600;color:var(--accent)}
+  .plan .price{font-size:16px;font-weight:600;margin-top:4px}
+  .stars{text-align:center;color:var(--muted);font-size:11px;margin-top:10px;letter-spacing:.04em}
+
+  /* HOME — strict hierarchy */
+  #home{position:relative;height:100%;padding:56px 24px 100px;overflow:auto;background:radial-gradient(circle at 20% 0%,#1c1a2c,#0b0a0e 60%)}
+  .greet{padding:14px 4px 12px}
+  .greet .h{font-family:"Fraunces",serif;font-weight:300;font-size:26px;letter-spacing:-.02em;line-height:1.1}
+  .greet .sub{color:var(--muted);font-size:13px;margin-top:6px;font-family:"Fraunces",serif;font-style:italic}
+
+  /* TONIGHT'S SOUND — the hook */
+  .tonight{position:relative;border-radius:24px;overflow:hidden;height:200px;margin-top:8px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;padding:18px 20px;box-shadow:0 24px 60px -20px rgba(60,60,138,.7)}
+  .tonight.sleep{background:linear-gradient(135deg,#1e2156,#3b3b8a 60%,#7a85d6)}
+  .tonight.focus{background:linear-gradient(135deg,#0a3d4a,#1c6d7d 60%,#3aa3b8)}
+  .tonight.relax{background:linear-gradient(135deg,#7a2a10,#c46a32 60%,#ffc89a)}
+  .tonight.meditate{background:linear-gradient(135deg,#2e3a2a,#5a6b4f 60%,#9aaf7c)}
+  .tonight .stars span{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;box-shadow:0 0 4px #fff;animation:twinkle 4s ease-in-out infinite}
+  .tonight .top{display:flex;justify-content:space-between;color:rgba(255,255,255,.85);font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;z-index:2;position:relative}
+  .tonight .body{z-index:2;position:relative}
+  .tonight .label{font-family:"Fraunces",serif;font-style:italic;font-size:12px;opacity:.85;margin-bottom:3px}
+  .tonight .name{font-family:"Fraunces",serif;font-weight:300;font-size:26px;line-height:1.1;letter-spacing:-.01em;color:#fff}
+  .tonight .meta{font-size:11px;color:rgba(255,255,255,.7);margin-top:6px;line-height:1.4}
+  .tonight .play{position:absolute;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.95);color:#0b0a0e;display:grid;place-items:center;font-size:17px;z-index:3}
+
+  .row-h{display:flex;justify-content:space-between;align-items:baseline;margin:18px 0 10px;padding:0 2px}
+  .row-h .t{font-family:"Fraunces",serif;font-style:italic;font-size:15px}
+  .row-h .a{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+
+  .mood-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
+  .mood-mini{position:relative;height:80px;border-radius:14px;overflow:hidden;display:flex;align-items:flex-end;padding:10px;cursor:pointer}
+  .mood-mini .nm{font-family:"Fraunces",serif;font-size:13px;color:#fff;z-index:2;position:relative}
+  .mood-mini.sleep{background:radial-gradient(ellipse at 70% 30%,var(--sleep-3),var(--sleep-1))}
+  .mood-mini.focus{background:radial-gradient(ellipse at 30% 30%,var(--focus-3),var(--focus-1))}
+  .mood-mini.relax{background:radial-gradient(ellipse at 80% 80%,var(--relax-3),var(--relax-1))}
+  .mood-mini.meditate{background:radial-gradient(ellipse at 50% 100%,var(--med-3),var(--med-1))}
+
+  .lp{display:flex;align-items:center;gap:12px;padding:10px;border-radius:14px;background:var(--panel);border:1px solid var(--line);margin-bottom:8px;cursor:pointer}
+  .lp .art{width:46px;height:46px;border-radius:10px;flex:0 0 46px;position:relative;overflow:hidden}
+  .lp .art::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.18),transparent 60%)}
+  .lp.sleep .art{background:linear-gradient(135deg,#1e2156,#3b3b8a)}
+  .lp.focus .art{background:linear-gradient(135deg,#0a3d4a,#1c6d7d)}
+  .lp.relax .art{background:linear-gradient(135deg,#7a2a10,#c46a32)}
+  .lp.meditate .art{background:linear-gradient(135deg,#2e3a2a,#5a6b4f)}
+  .lp .meta{flex:1;min-width:0}
+  .lp .nm{font-size:13px;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lp .desc{font-size:11px;color:var(--muted);margin-top:3px;display:flex;gap:6px;align-items:center}
+  .lp .dotc{width:6px;height:6px;border-radius:50%}
+  .lp .play{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.06);display:grid;place-items:center;color:var(--text);font-size:10px}
+  .empty{padding:14px;text-align:center;color:var(--muted);font-size:12px;font-style:italic;font-family:"Fraunces",serif;border:1px dashed var(--line);border-radius:14px}
+
+  /* TAG MOOD */
+  #tag{padding:80px 24px 40px;background:radial-gradient(circle at 50% 0%,#1c1a2c,#0b0a0e 70%);height:100%;display:flex;flex-direction:column}
+  #tag .eyebrow{font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.18em;text-transform:uppercase;margin-top:40px}
+  #tag .hd{font-family:"Fraunces",serif;font-weight:300;font-size:26px;letter-spacing:-.02em;line-height:1.15;margin-top:8px}
+  #tag .lede{color:var(--muted);font-size:13px;margin-top:8px}
+
+  /* LIBRARY */
+  #library{position:relative;height:100%;padding:60px 24px 100px;background:#0b0a0e;overflow:auto}
+  #library h2{font-family:"Fraunces",serif;font-weight:300;font-size:30px;letter-spacing:-.02em;margin:14px 0 14px}
+  .filter-row{display:flex;gap:8px;overflow-x:auto;margin:0 -24px 14px;padding:2px 24px;scrollbar-width:none}
+  .filter-row::-webkit-scrollbar{display:none}
+  .filter{flex:0 0 auto;padding:7px 13px;border-radius:999px;background:var(--panel);font-size:12px;font-weight:500;color:var(--muted);border:1px solid var(--line);cursor:pointer}
+  .filter.active{background:#fff;color:#0b0a0e;border-color:#fff}
+  .group-h{font-family:"Fraunces",serif;font-style:italic;font-size:15px;margin:14px 0 8px;display:flex;align-items:center;gap:8px}
+  .group-h .dot{width:8px;height:8px;border-radius:50%}
+
+  /* INSIGHTS / SOUNDPRINT */
+  #insights{position:relative;height:100%;padding:60px 24px 100px;background:#0b0a0e;overflow:auto;color:#fff}
+  #insights h2{font-family:"Fraunces",serif;font-weight:300;font-size:30px;letter-spacing:-.02em;margin:14px 0 6px}
+  #insights .week{color:var(--muted);font-size:13px;font-family:"Fraunces",serif;font-style:italic}
+  .sp-art{margin-top:18px;height:240px;border-radius:24px;background:radial-gradient(circle at 30% 40%,#7a85d6 0%,transparent 35%),radial-gradient(circle at 70% 60%,#ff9d5b 0%,transparent 35%),radial-gradient(circle at 50% 80%,#9aaf7c 0%,transparent 30%),#0b0a0e;position:relative;overflow:hidden}
+  .sp-art::after{content:"";position:absolute;inset:0;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");mix-blend-mode:overlay;opacity:.6}
+  .sp-art .label{position:absolute;bottom:16px;left:18px;font-family:"Fraunces",serif;font-style:italic;font-size:13px;opacity:.9;z-index:2}
+  .sp-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+  .sp-stat{background:var(--panel);border-radius:14px;padding:12px;border:1px solid var(--line)}
+  .sp-stat .lbl{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .sp-stat .v{font-family:"Fraunces",serif;font-weight:400;font-size:20px;margin-top:4px}
+  .sp-stat .sub{font-size:11px;color:var(--muted);margin-top:2px}
+  .sp-top{margin-top:12px;padding:12px;background:var(--panel);border-radius:14px;border:1px solid var(--line)}
+  .sp-top .lbl{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .sp-top .row{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px}
+  .sp-top .row .bar{flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+  .sp-top .row .bf{height:100%;border-radius:3px}
+  .sp-top .row .pct{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;width:30px;text-align:right}
+  .sp-share{margin-top:14px}
+
+  /* REFLECTION */
+  #reflect{padding:80px 28px 40px;background:radial-gradient(circle at 50% 20%,#1c1a2c,#0b0a0e 60%);height:100%;color:#fff;position:relative}
+  #reflect .eyebrow{font-family:"Fraunces",serif;font-style:italic;color:var(--muted);font-size:13px}
+  #reflect .hd{font-family:"Fraunces",serif;font-weight:300;font-size:32px;letter-spacing:-.02em;line-height:1.1;margin-top:6px}
+  #reflect .lede{color:var(--muted);font-size:13px;margin-top:10px;line-height:1.5}
+  .mood-pills{display:flex;gap:10px;margin-top:30px}
+  .mp{flex:1;aspect-ratio:1;border-radius:50%;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;text-align:center;cursor:pointer}
+  .mp.sel{background:rgba(167,139,250,.18);border-color:var(--accent)}
+  .mp .em{font-size:28px}
+  .mp .l{display:block;font-size:11px;color:var(--muted);font-weight:600;margin-top:2px}
+  .mp.sel .l{color:var(--text)}
+  .tags{margin-top:24px}
+  .tags .h{font-family:"Fraunces",serif;font-style:italic;font-size:13px;color:var(--muted);margin-bottom:8px}
+  .tg{display:inline-flex;align-items:center;padding:7px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-size:12px;font-weight:500;margin:0 6px 8px 0;cursor:pointer}
+  .tg.sel{background:rgba(167,139,250,.16);border-color:var(--accent)}
+  #reflect .actions{position:absolute;bottom:30px;left:28px;right:28px}
+
+  /* TAB BAR */
+  .tabbar{position:absolute;bottom:0;left:0;right:0;height:84px;background:rgba(11,10,14,.88);backdrop-filter:blur(20px);border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;padding-bottom:22px;z-index:60}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.04em;cursor:pointer;width:56px}
+  .tab .ic{width:22px;height:22px;display:grid;place-items:center;font-size:17px}
+  .tab.active{color:#fff}
+  .tab.fab{background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;width:54px;height:54px;border-radius:50%;margin-top:-22px;font-size:26px;box-shadow:0 12px 28px -8px rgba(139,92,246,.6)}
+
+  .hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(20,18,26,.92);border:1px solid var(--line-2);padding:10px 18px;border-radius:999px;font-size:12px;color:var(--text);backdrop-filter:blur(10px);z-index:200;opacity:0;transition:opacity .3s;pointer-events:none}
+  .hint.show{opacity:1}
+
+  .progress{position:absolute;top:54px;left:28px;right:28px;height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;z-index:3}
+  .progress > span{display:block;height:100%;background:var(--accent);border-radius:2px;transition:width .4s ease}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <span class="badge">v2 · strategy applied</span>
+  <h1>Faraway prototype v2</h1>
+  <p>8-screen onboarding · "Tonight's sound" hook on home · Insights tab with Soundprint · end-of-session reflection. The v1 prototype still lives at /faraway-onboarding/index.html.</p>
+  <div class="controls">
+    <span class="ctl" id="reset-onboard">↻ Restart from onboarding</span>
+    <span class="ctl" id="skip-to-home">⤳ Skip to home (seeded)</span>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="status">9:41</div>
+  <div class="status-r">●●● 96</div>
+
+  <!-- 1. SPLASH -->
+  <div class="scene on" id="scene-splash">
+    <div id="splash"><div class="glow"></div><div class="wordmark">faraway</div></div>
+  </div>
+
+  <!-- 2. VALUE PROP -->
+  <div class="scene" id="scene-value">
+    <div id="value">
+      <div class="eyebrow">Faraway</div>
+      <div class="hd">Describe a sound.<br/>We build it.</div>
+      <div class="lede">In your own words — a place, weather, a memory. Faraway turns it into a soundscape, tuned to your mood.</div>
+      <div class="actions">
+        <button class="btn" onclick="goto('goal')">Get started</button>
+        <div class="skip-link">I already have an account</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. GOAL -->
+  <div class="scene" id="scene-goal">
+    <div id="goal">
+      <div class="progress"><span style="width:33%"></span></div>
+      <div class="eyebrow">Step 1 of 3</div>
+      <div class="hd">What's the mood?</div>
+      <div class="lede">Pick the one that fits right now. You'll always come back to these.</div>
+      <div class="mgrid">
+        <div class="mcard sleep" data-onboard-mood="sleep"><div class="grain"></div><div class="glow"></div><div class="em">🌙</div><div class="body"><div class="nm">Sleep</div><div class="sub">deep & slow</div></div></div>
+        <div class="mcard focus" data-onboard-mood="focus"><div class="grain"></div><div class="glow"></div><div class="em">🎯</div><div class="body"><div class="nm">Focus</div><div class="sub">quiet & long</div></div></div>
+        <div class="mcard relax" data-onboard-mood="relax"><div class="grain"></div><div class="glow"></div><div class="em">🌿</div><div class="body"><div class="nm">Relax</div><div class="sub">warm & slow</div></div></div>
+        <div class="mcard meditate" data-onboard-mood="meditate"><div class="grain"></div><div class="glow"></div><div class="em">🧘</div><div class="body"><div class="nm">Meditate</div><div class="sub">still & open</div></div></div>
+      </div>
+      <div class="cta-wrap"><button class="btn" id="goal-cta" disabled onclick="goto('diag')">Continue</button></div>
+    </div>
+  </div>
+
+  <!-- 4. ONE DIAGNOSTIC -->
+  <div class="scene" id="scene-diag">
+    <div id="diag">
+      <div class="progress"><span style="width:66%"></span></div>
+      <div class="eyebrow">Step 2 of 3</div>
+      <div class="hd" id="d-hd">When do you usually need this?</div>
+      <div class="lede">One question, then the magic.</div>
+      <div class="opts" id="d-opts"></div>
+      <div class="cta-wrap"><button class="btn" id="diag-cta" onclick="goto('prompt')">Continue</button></div>
+    </div>
+  </div>
+
+  <!-- 5. PROMPT (the activation) -->
+  <div class="scene" id="scene-prompt">
+    <div id="prompt">
+      <div class="grain"></div>
+      <div class="progress"><span style="width:100%"></span></div>
+      <div class="topbar" style="margin-top:0">
+        <span class="b" data-back>← Back</span>
+        <span class="ctx" id="p-ctx">in Sleep</span>
+        <span style="width:36px"></span>
+      </div>
+      <div class="magic">★ The magic moment</div>
+      <div class="hd">Describe<br/>your first sound.</div>
+      <div class="lede">A place, weather, memory. We'll build it and you'll hear it.</div>
+      <div class="input-wrap">
+        <textarea id="p-input" rows="3" placeholder="e.g. Rain on a tent, distant thunder, no wind."></textarea>
+      </div>
+      <div class="ideas-h">Need an idea?</div>
+      <div class="ideas" id="p-ideas"></div>
+      <button class="btn gen-btn-fixed" id="gen-btn" disabled onclick="startGenerate()">Build the sound</button>
+    </div>
+  </div>
+
+  <!-- 6. LOADER -->
+  <div class="scene" id="scene-loader">
+    <div id="loader">
+      <div class="gen-rings"><div class="r"></div><div class="r"></div><div class="r"></div><div class="core"></div></div>
+      <div class="l-label" id="l-label">Building your sound</div>
+      <div class="l-echo" id="l-echo">rain · thunder · wind</div>
+    </div>
+  </div>
+
+  <!-- 7. PLAYER -->
+  <div class="scene" id="scene-player">
+    <div id="player">
+      <div class="grain"></div>
+      <div class="pt">
+        <div class="close" id="pl-close">×</div>
+        <div class="ctx" id="pl-ctx">Sleep · saved here</div>
+        <div class="more">···</div>
+      </div>
+      <div class="viz" id="pl-viz"></div>
+      <div class="ptitle">
+        <div class="eyebrow" id="pl-eyebrow">Now playing</div>
+        <div class="title" id="pl-title">Rain on a tent</div>
+        <div class="sub" id="pl-sub"></div>
+      </div>
+      <div class="mix" id="pl-mix"></div>
+      <div class="insight" id="pl-insight">
+        <span class="ic">✦</span>
+        <div class="body" id="pl-insight-body"></div>
+        <span class="x" id="pl-insight-x">×</span>
+      </div>
+      <div class="timer-pill" id="pl-timer"><span class="dot"></span><span id="pl-timer-text"></span></div>
+      <div class="pcontrols">
+        <div class="pc" title="Tune">≡</div>
+        <div class="pc big" id="pl-play">❚❚</div>
+        <div class="pc heart" id="pl-heart">♥</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. ACCOUNT -->
+  <div class="scene" id="scene-account">
+    <div id="account">
+      <div class="hd">Save your sounds.</div>
+      <div class="lede">Sign in so your mixes and progress follow you across devices.</div>
+      <div class="actions">
+        <button class="btn dark" onclick="goto('paywall')"> Continue with Apple</button>
+        <button class="btn ghost" onclick="goto('paywall')">Continue with Google</button>
+        <button class="btn ghost" onclick="goto('paywall')">Continue with Email</button>
+        <div class="legal">By continuing you agree to Terms & Privacy</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. PAYWALL -->
+  <div class="scene" id="scene-paywall">
+    <div id="paywall">
+      <div class="x" onclick="enterHome()">×</div>
+      <div class="eyebrow">Faraway plus</div>
+      <div class="hd" id="pw-hd">Built for your<br/>sleep goal.</div>
+      <div style="height:14px"></div>
+      <div class="feature"><div class="dot"></div>Unlimited prompts &amp; saved mixes</div>
+      <div class="feature"><div class="dot"></div>Sleep timer &amp; background play</div>
+      <div class="feature"><div class="dot"></div>Weekly Soundprint &amp; insights</div>
+      <div class="feature"><div class="dot"></div>Full library — 300+ sounds</div>
+      <div class="plan">
+        <div class="tag">SAVE 58%</div>
+        <div class="label">Annual · 7-day free trial</div>
+        <div class="price">$49.99 / year · $4.16 / mo</div>
+      </div>
+      <div style="text-align:center;color:var(--muted);font-size:13px;margin-top:12px">Monthly · $9.99</div>
+      <div style="margin-top:auto;padding-top:14px">
+        <button class="btn" onclick="enterHome()">Start free trial</button>
+      </div>
+      <div class="stars">★★★★★ 4.9 · 120k+ listeners</div>
+    </div>
+  </div>
+
+  <!-- HOME — strict hierarchy -->
+  <div class="scene" id="scene-home">
+    <div id="home">
+      <div class="greet">
+        <div class="h">Good evening,<br/><span style="font-style:italic;color:#c9c4d6;font-family:Fraunces,serif">Roni.</span></div>
+        <div class="sub" id="home-sub">Tuesday · 9:41 pm · light rain outside</div>
+      </div>
+
+      <!-- THE HOOK -->
+      <div class="tonight sleep" id="tonight" onclick="playTonight()">
+        <div class="grain"></div>
+        <div class="stars">
+          <span style="top:14%;left:20%"></span><span style="top:30%;left:65%;animation-delay:1s"></span>
+          <span style="top:50%;left:18%;animation-delay:1.6s"></span><span style="top:18%;left:80%;animation-delay:.7s"></span>
+        </div>
+        <div class="top"><span>★ Tonight</span><span id="t-fresh">refreshed 6:00 pm</span></div>
+        <div class="body">
+          <div class="label" id="t-label">Your top sleep mix · matched to tonight</div>
+          <div class="name" id="t-name">Rain on a tent</div>
+          <div class="meta" id="t-meta">Worked best on rainy Tuesdays · 4 of your top 5 sleep scores</div>
+        </div>
+        <div class="play">▶</div>
+      </div>
+
+      <div class="row-h"><div class="t">What's the mood?</div><div class="a"></div></div>
+      <div class="mood-row">
+        <div class="mood-mini sleep" data-pick="sleep"><div class="grain"></div><div class="nm">Sleep</div></div>
+        <div class="mood-mini focus" data-pick="focus"><div class="grain"></div><div class="nm">Focus</div></div>
+        <div class="mood-mini relax" data-pick="relax"><div class="grain"></div><div class="nm">Relax</div></div>
+        <div class="mood-mini meditate" data-pick="meditate"><div class="grain"></div><div class="nm">Meditate</div></div>
+      </div>
+
+      <div class="row-h"><div class="t">Last played</div><div class="a" onclick="goLib()">All →</div></div>
+      <div id="home-lp"></div>
+    </div>
+    <div class="tabbar">
+      <div class="tab active" data-tab="home"><div class="ic">⌂</div>Home</div>
+      <div class="tab" data-tab="library"><div class="ic">♫</div>Library</div>
+      <div class="tab fab" data-tab="create">+</div>
+      <div class="tab" data-tab="insights"><div class="ic">◉</div>Insights</div>
+      <div class="tab" data-tab="you"><div class="ic">◔</div>You</div>
+    </div>
+  </div>
+
+  <!-- TAG (Create flow) -->
+  <div class="scene" id="scene-tag">
+    <div id="tag">
+      <div class="topbar">
+        <span class="b" data-back>← Cancel</span>
+        <span class="ctx">New sound</span>
+        <span style="width:36px"></span>
+      </div>
+      <div class="eyebrow">Step 1 of 2</div>
+      <div class="hd">Save it under<br/>which mood?</div>
+      <div class="lede">So it's easy to find again.</div>
+      <div class="mgrid">
+        <div class="mcard sleep" data-tag-mood="sleep"><div class="grain"></div><div class="glow"></div><div class="em">🌙</div><div class="body"><div class="nm">Sleep</div><div class="sub">deep & slow</div></div></div>
+        <div class="mcard focus" data-tag-mood="focus"><div class="grain"></div><div class="glow"></div><div class="em">🎯</div><div class="body"><div class="nm">Focus</div><div class="sub">quiet & long</div></div></div>
+        <div class="mcard relax" data-tag-mood="relax"><div class="grain"></div><div class="glow"></div><div class="em">🌿</div><div class="body"><div class="nm">Relax</div><div class="sub">warm & slow</div></div></div>
+        <div class="mcard meditate" data-tag-mood="meditate"><div class="grain"></div><div class="glow"></div><div class="em">🧘</div><div class="body"><div class="nm">Meditate</div><div class="sub">still & open</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIBRARY -->
+  <div class="scene" id="scene-library">
+    <div id="library">
+      <h2>Your sounds</h2>
+      <div class="filter-row">
+        <div class="filter active">All</div>
+        <div class="filter">Sleep</div>
+        <div class="filter">Focus</div>
+        <div class="filter">Relax</div>
+        <div class="filter">Meditate</div>
+      </div>
+      <div id="lib-list"></div>
+    </div>
+    <div class="tabbar">
+      <div class="tab" data-tab="home"><div class="ic">⌂</div>Home</div>
+      <div class="tab active" data-tab="library"><div class="ic">♫</div>Library</div>
+      <div class="tab fab" data-tab="create">+</div>
+      <div class="tab" data-tab="insights"><div class="ic">◉</div>Insights</div>
+      <div class="tab" data-tab="you"><div class="ic">◔</div>You</div>
+    </div>
+  </div>
+
+  <!-- INSIGHTS / SOUNDPRINT -->
+  <div class="scene" id="scene-insights">
+    <div id="insights">
+      <div class="week">Week 19 · May 11–17</div>
+      <h2>Your sound,<br/>this week.</h2>
+      <div style="color:var(--relax-accent);font-family:Fraunces,serif;font-style:italic;font-size:14px;margin-top:6px">↑ 21% better sleep · 12 sessions</div>
+      <div class="sp-art">
+        <div class="label">Your Soundprint — rain, fire, breeze</div>
+      </div>
+      <div class="sp-stats">
+        <div class="sp-stat"><div class="lbl">Total time</div><div class="v">14h 22m</div><div class="sub">+3h vs. last week</div></div>
+        <div class="sp-stat"><div class="lbl">Best mood</div><div class="v">Sleep</div><div class="sub">4.1 / 5 avg score</div></div>
+      </div>
+      <div class="sp-top">
+        <div class="lbl">Top sounds</div>
+        <div class="row"><span style="width:80px">Soft rain</span><div class="bar"><div class="bf" style="width:88%;background:var(--sleep-accent)"></div></div><span class="pct">88%</span></div>
+        <div class="row"><span style="width:80px">Fire</span><div class="bar"><div class="bf" style="width:62%;background:var(--relax-accent)"></div></div><span class="pct">62%</span></div>
+        <div class="row"><span style="width:80px">Wind</span><div class="bar"><div class="bf" style="width:44%;background:var(--med-accent)"></div></div><span class="pct">44%</span></div>
+        <div class="row"><span style="width:80px">Pink noise</span><div class="bar"><div class="bf" style="width:30%;background:var(--focus-accent)"></div></div><span class="pct">30%</span></div>
+      </div>
+      <div class="sp-share"><button class="btn">Share your Soundprint</button></div>
+    </div>
+    <div class="tabbar">
+      <div class="tab" data-tab="home"><div class="ic">⌂</div>Home</div>
+      <div class="tab" data-tab="library"><div class="ic">♫</div>Library</div>
+      <div class="tab fab" data-tab="create">+</div>
+      <div class="tab active" data-tab="insights"><div class="ic">◉</div>Insights</div>
+      <div class="tab" data-tab="you"><div class="ic">◔</div>You</div>
+    </div>
+  </div>
+
+  <!-- REFLECTION -->
+  <div class="scene" id="scene-reflect">
+    <div id="reflect">
+      <div class="eyebrow" id="r-eyebrow">Sunset cabin · 90 min · Relax</div>
+      <div class="hd">How did<br/>that feel?</div>
+      <div class="lede">Optional. Helps tune what we suggest tomorrow.</div>
+      <div class="mood-pills">
+        <div class="mp" data-mood="worse"><div><span class="em">😕</span><span class="l">Worse</span></div></div>
+        <div class="mp" data-mood="same"><div><span class="em">😐</span><span class="l">Same</span></div></div>
+        <div class="mp sel" data-mood="better"><div><span class="em">🙂</span><span class="l">Better</span></div></div>
+      </div>
+      <div class="tags">
+        <div class="h">What worked? (optional)</div>
+        <span class="tg sel">Calmer</span>
+        <span class="tg sel">Fell asleep faster</span>
+        <span class="tg">Less anxious</span>
+        <span class="tg">More focused</span>
+        <span class="tg">Too quiet</span>
+        <span class="tg">Distracted</span>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="goto('home')">Save & continue</button>
+        <div class="skip-link" onclick="goto('home')">Skip</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="hint" id="hint"></div>
+
+<script>
+// ============ DATA ============
+const moods = {
+  sleep:    { name:"Sleep",    ctx:"Sleep · saved here",    accent:"sleep",    core:"#a7b6ff",
+    ideas:["Rain on a tent","Train at night","Cabin in a storm","Soft ocean, far away"],
+    defaultPrompt:"Rain on a tent, distant thunder, no wind.",
+    defaultSub:"Soft rain · distant thunder · tent fabric · wind",
+    defaultMix:[{nm:"Soft rain",ic:"☂",v:72},{nm:"Distant thunder",ic:"⚡",v:35},{nm:"Tent fabric",ic:"⛺",v:48},{nm:"Wind",ic:"🌬",v:12,muted:true}],
+    insight:'<b>Pink-noise pulses timed to deep-sleep brainwaves tripled overnight memory recall</b> in older adults. <span class="src">Papalambros et al. · Frontiers, 2017</span>',
+    timer:"Sleep timer · 1h 30m",
+    diag:{hd:"When does sleep get hard?",opts:["Tonight, just want help drifting off","Most nights — racing thoughts","Noisy environment","Wake up mid-night","Trouble winding down"]},
+  },
+  focus:    { name:"Focus",    ctx:"Focus · saved here",    accent:"focus",    core:"#9be6f3",
+    ideas:["Library, quiet pages","Tokyo hotel at 2am","Coffee shop, soft chatter","Mountain weather station"],
+    defaultPrompt:"Library, soft hum, page turns, distant footsteps.",
+    defaultSub:"Brown noise · page turns · soft hum · room tone",
+    defaultMix:[{nm:"Brown noise",ic:"▤",v:80},{nm:"Page turns",ic:"📖",v:30},{nm:"Soft hum",ic:"⌁",v:42},{nm:"Room tone",ic:"◌",v:18,muted:true}],
+    insight:'<b>Brown noise can help focus,</b> especially for ADHD — broadband low-frequency sound may compensate for lower baseline dopamine. <span class="src">Söderlund et al. · JAACAP, 2024</span>',
+    timer:"Focus session · 45m",
+    diag:{hd:"What pulls you out of focus?",opts:["Open-plan noise","Notifications","Racing thoughts","Background chatter","Restlessness"]},
+  },
+  relax:    { name:"Relax",    ctx:"Relax · saved here",    accent:"relax",    core:"#ffc89a",
+    ideas:["Greek island balcony","Cabin fire, snow outside","Porch at sunset","Garden after rain"],
+    defaultPrompt:"Greek island balcony, distant waves, cutlery clinking, warm breeze.",
+    defaultSub:"Distant waves · cutlery · breeze · cicadas",
+    defaultMix:[{nm:"Distant waves",ic:"🌊",v:65},{nm:"Cutlery clinks",ic:"🍴",v:38},{nm:"Warm breeze",ic:"🌬",v:52},{nm:"Cicadas",ic:"🦗",v:22,muted:true}],
+    insight:'<b>Water and bird sounds led to better cortisol recovery</b> than wind alone in a controlled stress-recovery study. <span class="src">Michels & Hamers · Environment & Behavior, 2023</span>',
+    timer:"",
+    diag:{hd:"When do you most need to unwind?",opts:["After work","Before bed","Weekend mornings","Anytime, often","Sundays"]},
+  },
+  meditate: { name:"Meditate", ctx:"Meditate · saved here", accent:"med",      core:"#d4e5b8",
+    ideas:["Morning fog, distant chimes","Mountain top stillness","Forest at dawn","Empty temple, soft bells"],
+    defaultPrompt:"Morning fog, soft singing bowl, distant birds.",
+    defaultSub:"Singing bowl · birds · soft wind · resonance",
+    defaultMix:[{nm:"Singing bowl",ic:"◉",v:55},{nm:"Soft birds",ic:"🐦",v:40},{nm:"Soft wind",ic:"🌬",v:30},{nm:"Low resonance",ic:"~",v:18,muted:true}],
+    insight:'<b>The breath circle moves at 6 cycles per minute</b> — the rate shown to boost parasympathetic activity and lower cortisol. <span class="src">Laborde et al. · Psychophysiology, 2022</span>',
+    timer:"",
+    diag:{hd:"How do you want to start?",opts:["Brand new — guide me","Returning practice","Quick reset, 5 min","Long, deep session"]},
+  }
+};
+
+// ============ STATE ============
+let state = {
+  onboardingMood:null, mood:null, prompt:"", playing:true, loved:false,
+  lastPlayed:[], source:"home", currentTitle:"", currentMins:0
+};
+
+function goto(id){
+  document.querySelectorAll(".scene").forEach(s=>s.classList.remove("on"));
+  const el = document.getElementById("scene-"+id);
+  if (el) el.classList.add("on");
+  if (id==="home") setTimeout(()=>{ const h=document.getElementById("home"); if(h) h.scrollTop=0; },0);
+  if (id==="library") setTimeout(()=>{ const h=document.getElementById("library"); if(h) h.scrollTop=0; },0);
+  if (id==="insights") setTimeout(()=>{ const h=document.getElementById("insights"); if(h) h.scrollTop=0; },0);
+}
+
+function hint(text){
+  const h = document.getElementById("hint");
+  h.textContent = text;
+  h.classList.add("show");
+  clearTimeout(window._h);
+  window._h = setTimeout(()=>h.classList.remove("show"), 2200);
+}
+
+// auto-advance splash
+setTimeout(()=>{ if (document.getElementById("scene-splash").classList.contains("on")) goto("value"); }, 2200);
+
+// goal pick
+document.querySelectorAll("[data-onboard-mood]").forEach(c=>{
+  c.onclick = ()=>{
+    document.querySelectorAll("[data-onboard-mood]").forEach(x=>x.classList.remove("sel"));
+    c.classList.add("sel");
+    state.onboardingMood = c.dataset.onboardMood;
+    state.mood = c.dataset.onboardMood;
+    document.getElementById("goal-cta").disabled = false;
+    setupDiag();
+    setupPrompt();
+  };
+});
+
+function setupDiag(){
+  const m = moods[state.onboardingMood];
+  document.getElementById("d-hd").textContent = m.diag.hd;
+  const opts = document.getElementById("d-opts");
+  opts.innerHTML = "";
+  m.diag.opts.forEach((o,i)=>{
+    const el = document.createElement("div");
+    el.className = "opt" + (i===0?" sel":"");
+    el.innerHTML = `<span>${o}</span><span class="check">${i===0?"✓":""}</span>`;
+    el.onclick = ()=>{
+      el.parentNode.querySelectorAll(".opt").forEach(x=>{x.classList.remove("sel");x.querySelector(".check").textContent="";});
+      el.classList.add("sel");
+      el.querySelector(".check").textContent="✓";
+    };
+    opts.appendChild(el);
+  });
+}
+
+function setupPrompt(){
+  const m = moods[state.mood];
+  document.getElementById("p-ctx").textContent = "in "+m.name;
+  document.getElementById("p-input").value = "";
+  document.getElementById("p-input").placeholder = "e.g. "+m.defaultPrompt;
+  const ideasEl = document.getElementById("p-ideas");
+  ideasEl.innerHTML = "";
+  m.ideas.forEach(i=>{
+    const el = document.createElement("div");
+    el.className = "idea";
+    el.textContent = i;
+    el.onclick = ()=>{ document.getElementById("p-input").value = i; updateGenBtn(); };
+    ideasEl.appendChild(el);
+  });
+  const p = document.getElementById("prompt");
+  p.className = "";
+  p.id = "prompt";
+  p.classList.add(state.mood+"-bg");
+  updateGenBtn();
+}
+
+function updateGenBtn(){
+  const v = document.getElementById("p-input").value.trim();
+  document.getElementById("gen-btn").disabled = v.length < 3;
+}
+document.getElementById("p-input").addEventListener("input", updateGenBtn);
+
+function startGenerate(){
+  state.prompt = document.getElementById("p-input").value.trim() || moods[state.mood].defaultPrompt;
+  const m = moods[state.mood];
+  goto("loader");
+  const ld = document.getElementById("loader");
+  ld.className = "";
+  ld.id = "loader";
+  ld.classList.add(state.mood+"-bg");
+  ld.style.setProperty("--ring-c", m.core);
+  ld.style.setProperty("--core-c", m.core);
+  document.getElementById("l-label").textContent = "Building your sound";
+  document.getElementById("l-echo").textContent = state.prompt;
+  setTimeout(()=>{ setupPlayer(); goto("player"); }, 3000);
+}
+
+function setupPlayer(){
+  const m = moods[state.mood];
+  const pl = document.getElementById("player");
+  pl.className = state.mood;
+  pl.id = "player";
+
+  document.getElementById("pl-ctx").textContent = m.ctx;
+  const eyebrow = document.getElementById("pl-eyebrow");
+  eyebrow.className = "eyebrow " + m.accent;
+  eyebrow.textContent = "Now playing";
+
+  const title = state.prompt.length > 38 ? state.prompt.slice(0,36)+"…" : state.prompt;
+  state.currentTitle = title;
+  document.getElementById("pl-title").textContent = title;
+  document.getElementById("pl-sub").textContent = m.defaultSub;
+
+  const viz = document.getElementById("pl-viz");
+  viz.className = "viz viz-"+(m.accent==="med"?"med":m.accent);
+  viz.innerHTML = vizHTML(state.mood);
+
+  const mix = document.getElementById("pl-mix");
+  mix.innerHTML = "";
+  m.defaultMix.forEach(s=>{
+    const row = document.createElement("div");
+    row.className = "srow " + m.accent + (s.muted?" muted":"");
+    row.dataset.v = s.v;
+    row.innerHTML = `
+      <div class="vbar" style="width:${s.v}%"></div>
+      <div class="knob" style="left:${s.v}%"></div>
+      <span class="ic">${s.ic}</span>
+      <span class="nm">${s.nm}</span>
+      <span class="pct">${s.v}</span>`;
+    attachSlider(row);
+    mix.appendChild(row);
+  });
+  const add = document.createElement("div");
+  add.className = "add-sound";
+  add.innerHTML = "＋ Add sound";
+  add.onclick = ()=>hint("Opens sound library");
+  mix.appendChild(add);
+
+  const insight = document.getElementById("pl-insight");
+  insight.classList.remove("show");
+  document.getElementById("pl-insight-body").innerHTML = m.insight;
+  setTimeout(()=>insight.classList.add("show"), 3500);
+
+  const timer = document.getElementById("pl-timer");
+  if (m.timer){ timer.style.display="flex"; document.getElementById("pl-timer-text").textContent = m.timer; }
+  else timer.style.display="none";
+
+  state.playing = true;
+  document.getElementById("pl-play").textContent = "❚❚";
+  state.loved = false;
+  document.getElementById("pl-heart").classList.remove("on");
+
+  recordLastPlayed({ mood: state.mood, title, sub: m.defaultSub, ts: Date.now() });
+}
+
+function vizHTML(mood){
+  if (mood==="sleep"){
+    let stars = "";
+    for (let i=0;i<7;i++){
+      const t = Math.random()*70+10, l = Math.random()*80+5, d = Math.random()*3;
+      stars += `<span style="top:${t}%;left:${l}%;animation-delay:${d}s"></span>`;
+    }
+    return `<div class="nebula"></div><div class="stars">${stars}</div><div class="moon"></div>`;
+  }
+  if (mood==="focus") return `<div class="lines"><div class="ln a"></div><div class="ln b"></div><div class="ln c"></div></div><div class="pillar"></div>`;
+  if (mood==="relax") return `<div class="rip"></div><div class="rip b"></div><div class="rip c"></div><div class="orb"></div>`;
+  if (mood==="meditate") return `<div class="breath-wrap"><div class="breath"></div></div><div class="breath-label">breathe in · breathe out</div>`;
+}
+
+function attachSlider(row){
+  let dragging = false;
+  function setFromEvent(e){
+    const rect = row.getBoundingClientRect();
+    const x = (e.touches? e.touches[0].clientX : e.clientX) - rect.left;
+    let pct = Math.round(Math.max(0,Math.min(100, x/rect.width*100)));
+    row.querySelector(".vbar").style.width = pct+"%";
+    row.querySelector(".knob").style.left = pct+"%";
+    row.querySelector(".pct").textContent = pct;
+    row.dataset.v = pct;
+    if (pct < 5) row.classList.add("muted"); else row.classList.remove("muted");
+  }
+  row.addEventListener("mousedown", e=>{ dragging=true; setFromEvent(e); });
+  row.addEventListener("touchstart", e=>{ dragging=true; setFromEvent(e); }, {passive:true});
+  window.addEventListener("mousemove", e=>{ if (dragging) setFromEvent(e); });
+  window.addEventListener("touchmove", e=>{ if (dragging) setFromEvent(e); }, {passive:true});
+  window.addEventListener("mouseup", ()=>dragging=false);
+  window.addEventListener("touchend", ()=>dragging=false);
+}
+
+document.getElementById("pl-insight-x").onclick = ()=>document.getElementById("pl-insight").classList.remove("show");
+document.getElementById("pl-play").onclick = ()=>{
+  state.playing = !state.playing;
+  document.getElementById("pl-play").textContent = state.playing ? "❚❚" : "▶";
+};
+document.getElementById("pl-heart").onclick = ()=>{
+  state.loved = !state.loved;
+  document.getElementById("pl-heart").classList.toggle("on", state.loved);
+  hint(state.loved ? "Saved to your "+moods[state.mood].name+" library" : "Removed");
+};
+
+// Closing the player triggers reflection (if from main app, not onboarding)
+document.getElementById("pl-close").onclick = ()=>{
+  if (state.source === "onboarding"){
+    state.source = "home"; // continue onboarding
+    goto("account");
+  } else {
+    // show reflection
+    const m = moods[state.mood];
+    document.getElementById("r-eyebrow").textContent = `${state.currentTitle} · 90 min · ${m.name}`;
+    goto("reflect");
+  }
+};
+
+document.querySelectorAll("[data-back]").forEach(el=>{
+  el.onclick = ()=>{
+    const current = document.querySelector(".scene.on").id.split("-")[1];
+    if (current==="prompt") goto(state.source==="onboarding" ? "diag" : (state.source==="create" ? "tag" : "home"));
+    else if (current==="tag") goto("home");
+    else goto("home");
+  };
+});
+
+// ============ HOME ============
+function enterHome(){
+  state.source = "home";
+  // seed last played from any onboarding session
+  if (state.lastPlayed.length === 0 && state.currentTitle){
+    recordLastPlayed({ mood:state.mood, title:state.currentTitle, sub:moods[state.mood].defaultSub, ts:Date.now() });
+  }
+  // seed if still empty
+  if (state.lastPlayed.length === 0){
+    state.lastPlayed = [
+      {mood:"sleep", title:"Rain on a tent", sub:"rain · thunder · wind", ts:Date.now()-3600000},
+      {mood:"focus", title:"Library, quiet pages", sub:"brown noise · soft hum", ts:Date.now()-7200000},
+    ];
+  }
+  renderLastPlayed();
+  setupTonight();
+  goto("home");
+}
+
+function recordLastPlayed(item){
+  state.lastPlayed = [item, ...state.lastPlayed.filter(p => p.title !== item.title)].slice(0,4);
+  renderLastPlayed();
+}
+
+function renderLastPlayed(){
+  const el = document.getElementById("home-lp");
+  if (!el) return;
+  if (state.lastPlayed.length === 0){
+    el.innerHTML = `<div class="empty">Your recent sounds will show here.</div>`;
+    return;
+  }
+  el.innerHTML = "";
+  state.lastPlayed.slice(0,3).forEach(p=>{
+    const dotColor = ({sleep:"#a7b6ff",focus:"#9be6f3",relax:"#ffc89a",meditate:"#d4e5b8"})[p.mood];
+    const row = document.createElement("div");
+    row.className = `lp ${p.mood}`;
+    row.innerHTML = `
+      <div class="art"></div>
+      <div class="meta">
+        <div class="nm">${p.title}</div>
+        <div class="desc"><span class="dotc" style="background:${dotColor}"></span>${moods[p.mood].name} · ${p.sub}</div>
+      </div>
+      <div class="play">▶</div>`;
+    row.onclick = ()=>{
+      state.mood = p.mood; state.prompt = p.title;
+      setupPlayer(); goto("player");
+    };
+    el.appendChild(row);
+  });
+}
+
+function setupTonight(){
+  // Hero refreshes by time of day, weather, history
+  const hour = new Date().getHours();
+  let mood = "sleep";
+  if (hour >= 9 && hour < 17) mood = "focus";
+  else if (hour >= 17 && hour < 21) mood = "relax";
+  else mood = "sleep";
+
+  // override based on last reflection patterns (here: just use the most-loved or top of last played)
+  const top = state.lastPlayed.find(p => p.mood===mood) || state.lastPlayed[0];
+  const m = moods[mood];
+
+  const t = document.getElementById("tonight");
+  t.className = "tonight " + mood;
+
+  const labels = {
+    sleep:"Your top sleep mix · matched to tonight",
+    focus:"For your morning focus block",
+    relax:"To end the day",
+    meditate:"To start the day quiet"
+  };
+  const metas = {
+    sleep:"Worked best on rainy Tuesdays · 4 of your top 5 sleep scores",
+    focus:"Your deepest focus sessions used this mix · 92% completion",
+    relax:"Your evening go-to · longest unwind streak",
+    meditate:"Pairs with the 6-bpm breath visual"
+  };
+
+  document.getElementById("t-label").textContent = labels[mood];
+  document.getElementById("t-name").textContent = (top && top.mood===mood) ? top.title : m.defaultPrompt.split(",")[0];
+  document.getElementById("t-meta").textContent = metas[mood];
+}
+
+function playTonight(){
+  const t = document.getElementById("tonight");
+  const mood = t.className.split(" ").find(c=>["sleep","focus","relax","meditate"].includes(c));
+  state.mood = mood;
+  state.prompt = document.getElementById("t-name").textContent;
+  setupPlayer();
+  goto("player");
+}
+
+document.querySelectorAll("[data-pick]").forEach(c=>{
+  c.onclick = ()=>{
+    state.mood = c.dataset.pick;
+    state.source = "home";
+    setupPrompt();
+    goto("prompt");
+  };
+});
+
+document.querySelectorAll("[data-tab]").forEach(t=>{
+  t.onclick = ()=>{
+    const id = t.dataset.tab;
+    if (id==="home") goto("home");
+    else if (id==="library") { renderLibrary(); goto("library"); }
+    else if (id==="create") { state.source="create"; goto("tag"); }
+    else if (id==="insights") goto("insights");
+    else hint(`${id[0].toUpperCase()+id.slice(1)} — coming soon`);
+  };
+});
+
+document.querySelectorAll("[data-tag-mood]").forEach(c=>{
+  c.onclick = ()=>{
+    state.mood = c.dataset.tagMood;
+    state.source = "create";
+    setupPrompt();
+    goto("prompt");
+  };
+});
+
+function goLib(){ renderLibrary(); goto("library"); }
+
+function renderLibrary(){
+  const el = document.getElementById("lib-list");
+  if (!el) return;
+  const seed = {
+    sleep: [
+      {title:"Rain on a tent", sub:"Rain · thunder · wind · tent fabric", when:"2h ago"},
+      {title:"Train at night", sub:"Steady rhythm · low hum · steel", when:"Mon"},
+    ],
+    focus: [
+      {title:"Library, quiet pages", sub:"Brown noise · page turns · soft hum", when:"Sun"},
+      {title:"Tokyo hotel, 2am", sub:"Rain · distant traffic · AC", when:"Sun"}
+    ],
+    relax: [{title:"Greek island balcony", sub:"Distant waves · cutlery · breeze", when:"Sat"}],
+    meditate: [{title:"Morning fog", sub:"Singing bowl · birds · soft wind", when:"Fri"}]
+  };
+  state.lastPlayed.forEach(p=>{
+    const m = p.mood;
+    if (!seed[m].some(x=>x.title===p.title)) seed[m].unshift({title:p.title, sub:p.sub, when:"Just now"});
+  });
+  el.innerHTML = "";
+  ["sleep","focus","relax","meditate"].forEach(m=>{
+    if (seed[m].length === 0) return;
+    const dot = ({sleep:"#a7b6ff",focus:"#9be6f3",relax:"#ffc89a",meditate:"#d4e5b8"})[m];
+    const gh = document.createElement("div");
+    gh.className = "group-h";
+    gh.innerHTML = `<span class="dot" style="background:${dot}"></span>${moods[m].name} · ${seed[m].length}`;
+    el.appendChild(gh);
+    seed[m].forEach(p=>{
+      const row = document.createElement("div");
+      row.className = `lp ${m}`;
+      row.innerHTML = `<div class="art"></div><div class="meta"><div class="nm">${p.title}</div><div class="desc"><span class="dotc" style="background:${dot}"></span>${p.sub}</div></div><div class="play">▶</div>`;
+      row.onclick = ()=>{ state.mood = m; state.prompt = p.title; setupPlayer(); goto("player"); };
+      el.appendChild(row);
+    });
+  });
+}
+
+// reflection mood pills + tags
+document.querySelectorAll("#reflect .mp").forEach(p=>{
+  p.onclick = ()=>{
+    document.querySelectorAll("#reflect .mp").forEach(x=>x.classList.remove("sel"));
+    p.classList.add("sel");
+  };
+});
+document.querySelectorAll("#reflect .tg").forEach(t=>{
+  t.onclick = ()=>t.classList.toggle("sel");
+});
+
+// Dev controls
+document.getElementById("reset-onboard").onclick = ()=>{
+  state = { onboardingMood:null, mood:null, prompt:"", playing:true, loved:false, lastPlayed:[], source:"onboarding", currentTitle:"", currentMins:0 };
+  document.querySelectorAll("[data-onboard-mood]").forEach(x=>x.classList.remove("sel"));
+  document.getElementById("goal-cta").disabled = true;
+  goto("splash");
+};
+document.getElementById("skip-to-home").onclick = ()=>{
+  state.source="home";
+  enterHome();
+};
+
+// Onboarding source flag
+const _origStart = startGenerate;
+document.getElementById("scene-prompt").addEventListener("transitionend", function(){
+  // detect onboarding flow: if we came from diag → prompt, mark source as onboarding
+}, {once:false});
+
+// When we go from diag → prompt → loader → player during onboarding, source is onboarding
+// so close button on player goes to account. Mark it when arriving at prompt from diag:
+const origGoto = goto;
+window.goto = function(id){
+  if (id === "prompt" && document.querySelector(".scene.on")?.id === "scene-diag"){
+    state.source = "onboarding";
+  }
+  origGoto(id);
+};
+</script>
+
+</body>
+</html>
