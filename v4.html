@@ -1,0 +1,1101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Faraway · v4 · journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,200;9..144,300;9..144,400;9..144,500&family=Caveat:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0907; --paper:#f4ecdb; --ink:#1a1610;
+    --panel:#15130f; --panel-2:#1d1a14;
+    --text:#f4eee3; --muted:#8a8378;
+    --line:rgba(255,243,224,.08); --line-2:rgba(255,243,224,.18);
+    --gold:#e8c896; --gold-dim:rgba(232,200,150,.18);
+    --aqua-1:#05202a; --aqua-2:#0f4858; --aqua-3:#3a8a9d; --aqua-acc:#9be6f3;
+    --cozy-1:#2a1408; --cozy-2:#5a2814; --cozy-3:#c08550; --cozy-acc:#ffd0a0;
+    --wild-1:#0f1a14; --wild-2:#1f3a2c; --wild-3:#4f7858; --wild-acc:#b8e0b8;
+    --weather-1:#0a0e1c; --weather-2:#1a2238; --weather-3:#3a4868; --weather-acc:#a6b8e6;
+    --night-1:#0a0712; --night-2:#1a1430; --night-3:#3a2a60; --night-acc:#c8b8ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#040303;color:var(--text);font-family:"Inter",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+  body{display:flex;flex-direction:column;align-items:center;padding:32px 0 80px;background:radial-gradient(ellipse at top,#13100c,#040303 60%)}
+  .top{text-align:center;margin-bottom:20px;max-width:640px;padding:0 24px}
+  .top .badge{display:inline-block;padding:4px 10px;border-radius:999px;background:rgba(232,200,150,.15);color:var(--gold);font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px}
+  .top h1{font-family:"Fraunces",serif;font-weight:300;font-size:28px;letter-spacing:-.02em;margin:0}
+  .top p{color:var(--muted);font-size:13px;margin:6px 0 0;line-height:1.5}
+  .controls{display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+  .ctl{padding:7px 14px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;user-select:none}
+  .ctl:hover{color:var(--text);border-color:var(--line-2)}
+
+  .phone{position:relative;width:390px;height:844px;border-radius:46px;background:#000;overflow:hidden;box-shadow:0 60px 120px -30px rgba(0,0,0,.8),0 0 0 12px #1a181f,0 0 0 13px rgba(255,255,255,.06)}
+  .notch{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:120px;height:30px;background:#000;border-radius:20px;z-index:80}
+  .status{position:absolute;top:18px;left:28px;font-size:14px;font-weight:600;z-index:70;color:#fff;mix-blend-mode:difference}
+  .status-r{position:absolute;top:18px;right:28px;font-size:13px;font-weight:600;z-index:70;color:#fff;mix-blend-mode:difference}
+  .home-indicator{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:120px;height:4px;background:rgba(255,255,255,.5);border-radius:2px;z-index:80}
+
+  .scene{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .5s ease;display:flex;flex-direction:column;overflow:hidden}
+  .scene.on{opacity:1;pointer-events:auto}
+  .grain{position:absolute;inset:0;pointer-events:none;opacity:.4;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+  .paper-grain{position:absolute;inset:0;pointer-events:none;opacity:.25;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .3  0 0 0 0 .2  0 0 0 0 .1  0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+  .topo{position:absolute;inset:0;pointer-events:none;opacity:.08;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><g fill='none' stroke='%23ffeec4' stroke-width='0.5'><path d='M0,80 Q100,40 200,80 T400,80'/><path d='M0,120 Q100,90 200,120 T400,120'/><path d='M0,160 Q100,130 200,160 T400,160'/><path d='M0,200 Q100,170 200,200 T400,200'/><path d='M0,240 Q100,210 200,240 T400,240'/><path d='M0,280 Q100,250 200,280 T400,280'/><path d='M0,320 Q100,290 200,320 T400,320'/></g></svg>")}
+
+  .btn{display:flex;align-items:center;justify-content:center;height:54px;border-radius:999px;background:var(--gold);color:#0a0907;font-weight:600;font-size:15px;border:0;width:100%;cursor:pointer;transition:opacity .2s}
+  .btn:disabled{opacity:.3;cursor:not-allowed}
+  .btn.dark{background:#f4eee3;color:#000}
+  .btn.ghost{background:transparent;border:1px solid var(--line-2);color:var(--text)}
+  .btn.ink{background:var(--ink);color:var(--paper)}
+  .skip-link{text-align:center;margin-top:14px;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer}
+  .skip-link:hover{color:var(--text)}
+  .topbar{display:flex;justify-content:space-between;align-items:center;color:#fff;font-size:14px;font-weight:500}
+  .topbar .b{cursor:pointer;opacity:.8}
+
+  .caveat{font-family:"Caveat",cursive;font-weight:500}
+  .fraunces{font-family:"Fraunces",serif;font-weight:300}
+
+  /* dotted journal divider */
+  .divider{position:relative;display:flex;align-items:center;gap:10px;color:var(--gold);font-family:"Caveat",cursive;font-size:14px;letter-spacing:.04em;margin:8px 0;opacity:.7}
+  .divider::before,.divider::after{content:"";flex:1;border-bottom:1px dotted rgba(232,200,150,.4)}
+
+  /* ============ SPLASH — animated cosmos ============ */
+  #splash{padding:0;background:#03020a;display:grid;place-items:center;height:100%;position:relative;overflow:hidden}
+  #splash .cosmos{position:absolute;inset:0;overflow:hidden}
+  #splash .galaxy{position:absolute;width:160%;height:120%;top:-10%;left:-30%;
+    background:
+      radial-gradient(ellipse at 30% 40%, rgba(232,200,150,.22) 0%, transparent 25%),
+      radial-gradient(ellipse at 70% 30%, rgba(155,180,255,.22) 0%, transparent 25%),
+      radial-gradient(ellipse at 50% 60%, rgba(200,184,255,.18) 0%, transparent 30%);
+    filter:blur(40px);animation:s-spin 40s linear infinite}
+  @keyframes s-spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+  #splash .nebula{position:absolute;width:140%;height:140%;top:-20%;left:-20%;
+    background:radial-gradient(ellipse at 50% 50%, rgba(80,50,120,.5), transparent 60%);
+    filter:blur(50px);opacity:.6;animation:s-pulse 8s ease-in-out infinite}
+  @keyframes s-pulse{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.1);opacity:.7}}
+  .splash-star{position:absolute;background:#fff;border-radius:50%}
+  .splash-star.s1{width:1px;height:1px}
+  .splash-star.s2{width:1.5px;height:1.5px;box-shadow:0 0 3px rgba(255,255,255,.6)}
+  .splash-star.s3{width:2px;height:2px;box-shadow:0 0 4px #fff,0 0 8px rgba(232,200,150,.6)}
+  @keyframes s-twk{0%,100%{opacity:.2}50%{opacity:1}}
+  .splash-orbit{position:absolute;border:1px dashed rgba(232,200,150,.18);border-radius:50%;animation:s-rotate 90s linear infinite}
+  .splash-orbit.o1{width:280px;height:280px}
+  .splash-orbit.o2{width:420px;height:420px;animation-duration:140s;animation-direction:reverse}
+  .splash-orbit.o3{width:560px;height:560px;animation-duration:200s}
+  @keyframes s-rotate{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+  .splash-orbit::before{content:"";position:absolute;width:4px;height:4px;background:var(--gold);border-radius:50%;top:50%;left:0;transform:translateY(-50%);box-shadow:0 0 6px var(--gold)}
+  #splash .ws{position:relative;text-align:center;z-index:5;transform:translateY(0);animation:logo-rise 2s ease-out}
+  @keyframes logo-rise{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+  #splash .wordmark{font-family:"Fraunces",serif;font-weight:200;font-size:58px;letter-spacing:-.02em;color:var(--text);position:relative;text-shadow:0 0 30px rgba(232,200,150,.4)}
+  #splash .tag{margin-top:14px;font-family:"Caveat",cursive;font-size:20px;color:var(--gold);opacity:.85;animation:fade-in 2s ease 1s both}
+  @keyframes fade-in{from{opacity:0}to{opacity:.85}}
+  #splash .center-glow{position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(232,200,150,.4),transparent 70%);filter:blur(30px);animation:s-pulse 4s ease-in-out infinite}
+  #splash .footer{position:absolute;bottom:80px;left:0;right:0;text-align:center;color:rgba(244,238,227,.4);font-size:11px;font-family:"Caveat",cursive;font-size:14px;letter-spacing:.04em;animation:fade-in 3s ease 2s both;opacity:0}
+
+  /* ============ GOAL ============ */
+  #goal{padding:80px 24px 40px;background:radial-gradient(ellipse at top,#1c1814,#040303 70%);display:flex;flex-direction:column;height:100%;position:relative;overflow:hidden}
+  #goal .eyebrow{font-family:"Caveat",cursive;font-size:18px;color:var(--gold);opacity:.85;position:relative;z-index:2}
+  #goal .hd{font-family:"Fraunces",serif;font-weight:300;font-size:32px;letter-spacing:-.02em;line-height:1.05;margin-top:6px;color:var(--text);position:relative;z-index:2}
+  #goal .lede{color:var(--muted);font-size:14px;line-height:1.5;margin-top:10px;position:relative;z-index:2}
+  .goal-stack{margin-top:24px;display:flex;flex-direction:column;gap:10px;position:relative;z-index:2}
+  .goal-row{display:flex;align-items:center;gap:14px;padding:18px 20px;border-radius:18px;background:rgba(255,243,224,.04);border:1px solid var(--line);cursor:pointer;transition:all .15s ease;position:relative;overflow:hidden}
+  .goal-row::after{content:"";position:absolute;right:18px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:18px;opacity:0;transition:all .2s}
+  .goal-row:hover{background:rgba(255,243,224,.07);border-color:var(--line-2);transform:translateX(4px)}
+  .goal-row:hover::after{opacity:.8;content:"→"}
+  .goal-row .em{font-size:24px;width:36px;text-align:center;opacity:.9}
+  .goal-row .body{flex:1}
+  .goal-row .nm{font-family:"Fraunces",serif;font-weight:400;font-size:22px;letter-spacing:-.01em}
+  .goal-row .desc{font-family:"Caveat",cursive;font-size:15px;color:var(--muted);margin-top:2px}
+  .goal-row .glow{position:absolute;width:120px;height:120px;border-radius:50%;filter:blur(40px);opacity:.5;pointer-events:none}
+  .goal-row.sleep .glow{background:#7c83ff;right:-30px;top:-30px}
+  .goal-row.focus .glow{background:#5dd5e8;left:-30px;top:-30px}
+  .goal-row.relax .glow{background:#ff9d5b;right:-30px;bottom:-30px}
+  .goal-row.meditate .glow{background:#a4cf7c;left:-30px;bottom:-30px}
+
+  /* ============ STAT (after goal pick) ============ */
+  #stat{padding:80px 28px 100px;background:radial-gradient(ellipse at top,#1c1814,#040303 70%);display:flex;flex-direction:column;height:100%;position:relative;overflow:hidden;justify-content:center}
+  #stat .topo{opacity:.06}
+  #stat .field{position:relative;z-index:2;text-align:center;animation:stat-rise 1s ease}
+  @keyframes stat-rise{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+  #stat .label{font-family:"Caveat",cursive;font-size:18px;color:var(--gold);opacity:.85;margin-bottom:14px}
+  #stat .big{font-family:"Fraunces",serif;font-weight:200;font-size:96px;letter-spacing:-.04em;line-height:.9;color:var(--text);position:relative;display:inline-block}
+  #stat .big .unit{font-size:36px;vertical-align:top;margin-top:18px;display:inline-block;font-weight:300}
+  #stat .big::after{content:"";position:absolute;left:50%;bottom:-12px;transform:translateX(-50%);width:60px;height:2px;background:var(--gold);opacity:.6}
+  #stat .quote{font-family:"Fraunces",serif;font-style:italic;font-size:18px;line-height:1.4;color:var(--text);max-width:300px;margin:32px auto 0}
+  #stat .src{font-family:"Inter",sans-serif;font-size:10px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;margin-top:18px;font-weight:600}
+  #stat .meta{font-family:"Caveat",cursive;font-size:14px;color:var(--gold);opacity:.7;margin-top:6px}
+  #stat .actions{position:absolute;bottom:40px;left:28px;right:28px;z-index:2}
+
+  /* decorative — handwritten margin notes on stat */
+  #stat .annotation{position:absolute;font-family:"Caveat",cursive;color:rgba(232,200,150,.4);font-size:14px;transform:rotate(-3deg)}
+  #stat .annotation.a1{top:18%;right:18px;transform:rotate(8deg)}
+  #stat .annotation.a2{top:60%;left:14px;transform:rotate(-5deg)}
+
+  /* ============ MOOD CHECK-IN ============ */
+  #checkin{padding:80px 28px 100px;background:radial-gradient(ellipse at top,#1c1814,#040303 70%);display:flex;flex-direction:column;height:100%;position:relative;overflow:hidden}
+  #checkin .topo{opacity:.05}
+  #checkin .eyebrow{font-family:"Caveat",cursive;font-size:18px;color:var(--gold);opacity:.85;position:relative;z-index:2}
+  #checkin .hd{font-family:"Fraunces",serif;font-weight:300;font-size:28px;letter-spacing:-.02em;line-height:1.1;margin-top:6px;color:var(--text);position:relative;z-index:2}
+  #checkin .sub{color:var(--muted);font-size:13px;margin-top:10px;line-height:1.5;font-family:"Fraunces",serif;font-style:italic;position:relative;z-index:2}
+  .scale{margin-top:40px;position:relative;z-index:2}
+  .scale-row{display:flex;justify-content:space-between;gap:8px}
+  .scale-dot{flex:1;aspect-ratio:1;border-radius:50%;background:rgba(255,243,224,.04);border:1px solid var(--line);display:grid;place-items:center;font-family:"Fraunces",serif;font-weight:400;font-size:15px;color:var(--muted);cursor:pointer;transition:all .15s}
+  .scale-dot:hover{background:rgba(255,243,224,.08);border-color:var(--line-2)}
+  .scale-dot.sel{background:var(--gold);color:#0a0907;border-color:var(--gold);box-shadow:0 0 24px rgba(232,200,150,.4);transform:scale(1.1)}
+  .scale-labels{display:flex;justify-content:space-between;margin-top:14px;font-family:"Caveat",cursive;font-size:16px;color:var(--muted)}
+  .scale-current{text-align:center;margin-top:32px;font-family:"Fraunces",serif;font-style:italic;font-size:18px;color:var(--text);min-height:30px;position:relative;z-index:2}
+  #checkin .actions{position:absolute;bottom:40px;left:28px;right:28px;z-index:2}
+
+  /* ============ PROMPT ============ */
+  #ob-prompt{padding:80px 28px 100px;background:radial-gradient(ellipse at top,#1c1814,#040303 70%);display:flex;flex-direction:column;height:100%;position:relative;overflow:hidden}
+  #ob-prompt .topo{opacity:.05}
+  #ob-prompt .eyebrow{font-family:"Caveat",cursive;font-size:18px;color:var(--gold);opacity:.85;position:relative;z-index:2}
+  #ob-prompt .hd{font-family:"Fraunces",serif;font-weight:300;font-size:30px;letter-spacing:-.02em;line-height:1.05;color:var(--text);margin-top:6px;position:relative;z-index:2}
+  #ob-prompt .lede{color:var(--muted);font-size:13px;margin-top:8px;line-height:1.5;position:relative;z-index:2}
+  .input-wrap{margin-top:18px;background:rgba(255,243,224,.06);border:1px solid rgba(232,200,150,.3);border-radius:20px;padding:18px;backdrop-filter:blur(10px);position:relative;z-index:2}
+  .input-wrap textarea{width:100%;border:0;outline:0;background:transparent;color:var(--text);font-family:"Fraunces",serif;font-weight:300;font-size:18px;line-height:1.5;resize:none;min-height:90px}
+  .input-wrap textarea::placeholder{color:rgba(244,238,227,.4);font-style:italic}
+  .ideas-h{font-family:"Caveat",cursive;font-size:16px;color:var(--gold);opacity:.85;margin:20px 0 8px;position:relative;z-index:2}
+  .ideas{display:flex;flex-wrap:wrap;gap:8px;position:relative;z-index:2}
+  .idea{padding:9px 13px;border-radius:999px;background:rgba(255,243,224,.06);border:1px solid rgba(232,200,150,.18);color:var(--text);font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px}
+  .idea:hover{background:rgba(255,243,224,.12);border-color:rgba(232,200,150,.4)}
+  .gen-btn-fixed{position:absolute;bottom:40px;left:28px;right:28px;z-index:3}
+
+  /* ============ LOADER ============ */
+  #loader{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 28px;height:100%;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 50%,#1c1814,#040303 70%)}
+  #loader.atmos-aqua{background:radial-gradient(circle at 50% 50%,var(--aqua-2),#020608 70%)}
+  #loader.atmos-cozy{background:radial-gradient(circle at 50% 50%,var(--cozy-2),#0a0503 70%)}
+  #loader.atmos-wild{background:radial-gradient(circle at 50% 50%,var(--wild-2),#020403 70%)}
+  #loader.atmos-weather{background:radial-gradient(circle at 50% 50%,var(--weather-2),#03050a 70%)}
+  #loader.atmos-night{background:radial-gradient(circle at 50% 50%,var(--night-2),#050308 70%)}
+  .gen-rings{position:relative;width:240px;height:240px;display:grid;place-items:center;margin-bottom:28px}
+  .gen-rings .r{position:absolute;border:1px solid var(--ring-c,#e8c896);border-radius:50%;animation:gring 3s ease-out infinite}
+  .gen-rings .r:nth-child(1){width:80px;height:80px;opacity:.7}
+  .gen-rings .r:nth-child(2){width:150px;height:150px;animation-delay:.6s;opacity:.45}
+  .gen-rings .r:nth-child(3){width:220px;height:220px;animation-delay:1.2s;opacity:.25}
+  .gen-rings .core{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,var(--core-c,#e8c896),transparent 70%);filter:blur(8px)}
+  @keyframes gring{0%{transform:scale(.6);opacity:.8}100%{transform:scale(1.4);opacity:0}}
+  .l-label{font-family:"Caveat",cursive;color:rgba(232,200,150,.85);font-size:18px;position:relative;z-index:2}
+  .l-echo{font-family:"Fraunces",serif;font-weight:300;font-style:italic;font-size:22px;color:#fff;line-height:1.3;margin-top:8px;text-align:center;max-width:300px;position:relative;z-index:2}
+  .l-step{margin-top:18px;font-size:12px;color:rgba(255,255,255,.5);font-style:italic;font-family:"Fraunces",serif;position:relative;z-index:2}
+
+  /* ============ PLAYER ============ */
+  #player{display:flex;flex-direction:column;color:#fff;position:relative;height:100%}
+  #player.atmos-aqua{background:radial-gradient(ellipse at 50% 0%,var(--aqua-3) 0%,var(--aqua-1) 50%,#020608 100%)}
+  #player.atmos-cozy{background:radial-gradient(ellipse at 50% 0%,var(--cozy-3) 0%,var(--cozy-1) 50%,#0a0503 100%)}
+  #player.atmos-wild{background:radial-gradient(ellipse at 50% 0%,var(--wild-3) 0%,var(--wild-1) 50%,#020403 100%)}
+  #player.atmos-weather{background:radial-gradient(ellipse at 50% 0%,var(--weather-3) 0%,var(--weather-1) 60%,#03050a 100%)}
+  #player.atmos-night{background:radial-gradient(ellipse at 50% 30%,var(--night-3) 0%,var(--night-1) 60%,#050308 100%)}
+  .pt{display:flex;justify-content:space-between;align-items:center;padding:60px 28px 0;font-size:14px;font-weight:500;opacity:.85;z-index:30;position:relative}
+  .pt .close,.pt .more{cursor:pointer}
+  .pt .close{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.08);display:grid;place-items:center;font-size:14px;backdrop-filter:blur(10px)}
+  .pt .ctx{font-family:"Caveat",cursive;font-size:15px}
+  .pt .more{font-size:18px;color:rgba(255,255,255,.7)}
+  .viz{position:relative;height:240px;display:grid;place-items:center;margin-top:6px;overflow:hidden}
+
+  /* Aqua */
+  .viz-aqua{background:linear-gradient(180deg,#0f4858 0%,#05202a 80%)}
+  .viz-aqua .caustic{position:absolute;inset:0;background:radial-gradient(circle at 20% 30%,rgba(155,230,243,.4),transparent 40%),radial-gradient(circle at 70% 20%,rgba(255,255,255,.3),transparent 40%),radial-gradient(circle at 50% 60%,rgba(155,230,243,.3),transparent 50%);mix-blend-mode:screen;animation:caustic 8s ease-in-out infinite;filter:blur(8px)}
+  @keyframes caustic{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-20px,10px) scale(1.05)}66%{transform:translate(10px,-15px) scale(.97)}}
+  .viz-aqua .ray{position:absolute;top:-10%;width:80px;height:120%;background:linear-gradient(180deg,rgba(255,255,255,.18),transparent);transform:skewX(-15deg);filter:blur(6px);animation:ray 7s ease-in-out infinite}
+  .viz-aqua .ray.r1{left:20%}.viz-aqua .ray.r2{left:55%;animation-delay:2s;width:50px}.viz-aqua .ray.r3{left:75%;animation-delay:4s;width:100px}
+  @keyframes ray{0%,100%{opacity:.4}50%{opacity:.7}}
+  .viz-aqua .bubble{position:absolute;bottom:-20px;width:6px;height:6px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#fff,rgba(155,230,243,.4));box-shadow:0 0 6px rgba(155,230,243,.6);animation:bubble-rise 8s ease-in infinite}
+  @keyframes bubble-rise{0%{transform:translateY(0);opacity:0}10%{opacity:.9}100%{transform:translateY(-260px) translateX(20px);opacity:0}}
+
+  /* Cozy */
+  .viz-cozy{background:radial-gradient(ellipse at 50% 80%,#5a2814,#0a0503 80%)}
+  .viz-cozy .glow{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(255,180,100,.45),transparent 60%);filter:blur(30px);animation:glow-pulse 3s ease-in-out infinite;bottom:-40px}
+  @keyframes glow-pulse{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+  .viz-cozy .hearth{position:absolute;bottom:40px;width:140px;height:130px;background:radial-gradient(ellipse at 50% 80%,#ffd0a0 0%,#ff9050 30%,#c04a10 60%,transparent 80%);border-radius:50% 50% 40% 40%;animation:flame 2.5s ease-in-out infinite;filter:blur(2px)}
+  @keyframes flame{0%,100%{transform:scaleY(1) scaleX(1)}25%{transform:scaleY(1.08) scaleX(.95)}75%{transform:scaleY(.95) scaleX(1.05)}}
+  .viz-cozy .flame-tongue{position:absolute;bottom:60px;width:30px;height:80px;background:radial-gradient(ellipse at 50% 80%,#ffe0b0,#ffa050,transparent);border-radius:50% 50% 40% 40%;filter:blur(3px)}
+  .viz-cozy .flame-tongue.f1{left:42%;animation:tongue 1.8s ease-in-out infinite}
+  .viz-cozy .flame-tongue.f2{left:50%;animation:tongue 1.5s ease-in-out infinite reverse;height:60px}
+  .viz-cozy .flame-tongue.f3{left:58%;animation:tongue 2s ease-in-out infinite;height:70px}
+  @keyframes tongue{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(-10px) scaleY(1.2)}}
+  .viz-cozy .ember{position:absolute;bottom:60px;width:3px;height:3px;background:#ffd0a0;border-radius:50%;box-shadow:0 0 6px #ffb070;animation:ember-rise 5s ease-out infinite}
+  @keyframes ember-rise{0%{transform:translateY(0);opacity:0}10%{opacity:1}100%{transform:translateY(-200px);opacity:0}}
+
+  /* Wild */
+  .viz-wild{background:linear-gradient(180deg,#1c3528,#0f1a14 100%);display:block}
+  .viz-wild .sky-glow{position:absolute;top:0;left:0;right:0;height:140px;background:linear-gradient(180deg,rgba(184,224,184,.3),transparent)}
+  .viz-wild .wsun{position:absolute;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,#fff,#fff8b8 50%,transparent 80%);box-shadow:0 0 60px rgba(255,250,200,.6);top:30px;left:50%;transform:translateX(-50%);animation:sun-pulse 8s ease-in-out infinite}
+  @keyframes sun-pulse{0%,100%{opacity:.85}50%{opacity:1}}
+  .viz-wild .cloud{position:absolute;height:24px;border-radius:50%;background:radial-gradient(ellipse,rgba(255,255,255,.5),transparent 70%);filter:blur(6px);animation:cloud-drift 30s linear infinite}
+  .viz-wild .cloud.c1{width:120px;top:50px;animation-delay:-5s}
+  .viz-wild .cloud.c2{width:80px;top:90px;animation-delay:-15s;animation-duration:40s;opacity:.7}
+  @keyframes cloud-drift{0%{left:-30%}100%{left:130%}}
+  .viz-wild .mtn{position:absolute;bottom:0;left:0;right:0;height:100px;background:#4f7858;clip-path:polygon(0 100%, 0 60%, 12% 30%, 25% 55%, 38% 25%, 52% 50%, 65% 20%, 78% 45%, 88% 35%, 100% 55%, 100% 100%);opacity:.5}
+  .viz-wild .mtn.front{height:70px;background:#2a4030;clip-path:polygon(0 100%, 0 70%, 15% 40%, 30% 65%, 48% 35%, 62% 60%, 78% 30%, 92% 55%, 100% 45%, 100% 100%);opacity:.9}
+  .viz-wild .grass{position:absolute;bottom:0;left:0;right:0;height:20px;background:linear-gradient(180deg,transparent,#1f3a2c);opacity:.9}
+
+  /* Weather */
+  .viz-weather{background:linear-gradient(180deg,#1a2238,#0a0e1c 100%)}
+  .viz-weather .stormcloud{position:absolute;top:20px;left:10%;right:10%;height:80px;background:radial-gradient(ellipse at 50% 50%,#5a6890,#2a3868);border-radius:50%;filter:blur(12px);opacity:.7;animation:cloud-drift-slow 20s ease-in-out infinite}
+  @keyframes cloud-drift-slow{0%,100%{transform:translateX(0)}50%{transform:translateX(15px)}}
+  .viz-weather .lightning{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(255,255,255,.7),transparent 60%);opacity:0;animation:flash 10s ease-out infinite}
+  @keyframes flash{0%,90%,100%{opacity:0}92%{opacity:.6}93%{opacity:0}94%{opacity:.8}96%{opacity:0}}
+  .viz-weather .rain{position:absolute;width:1.5px;background:linear-gradient(180deg,transparent,#a6b8e6);animation:rain-fall 1s linear infinite}
+  .viz-weather .rain.near{width:2px;height:30px;opacity:.8}
+  .viz-weather .rain.mid{width:1.5px;height:24px;opacity:.6}
+  .viz-weather .rain.far{width:1px;height:18px;opacity:.4}
+  @keyframes rain-fall{0%{transform:translateY(-40px)}100%{transform:translateY(280px)}}
+
+  /* Night */
+  .viz-night{background:radial-gradient(ellipse at 50% 60%,#1a1430,#0a0712 80%)}
+  .viz-night .aurora{position:absolute;top:0;left:-20%;right:-20%;height:60%;background:radial-gradient(ellipse at 30% 30%,rgba(120,200,180,.25),transparent 50%),radial-gradient(ellipse at 70% 40%,rgba(180,120,220,.2),transparent 50%);filter:blur(40px);animation:aurora-drift 20s ease-in-out infinite}
+  @keyframes aurora-drift{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(20px,-10px) scale(1.05)}}
+  .viz-night .nstars span{position:absolute;background:#fff;border-radius:50%;animation:s-twk 4s ease-in-out infinite}
+  .viz-night .moon{position:absolute;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#dfe2ff 40%,#8e96d6 90%);box-shadow:0 0 60px rgba(167,182,255,.5),0 0 120px rgba(167,182,255,.25);top:30px;right:40px;animation:moon-breathe 7s ease-in-out infinite}
+  @keyframes moon-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+  .viz-night .constellation{position:absolute;top:30%;left:20%;width:120px;height:80px;opacity:.4}
+
+  .ptitle{text-align:center;padding:10px 28px 4px;position:relative;z-index:5}
+  .ptitle .eyebrow{font-family:"Caveat",cursive;font-size:15px;opacity:.85}
+  .ptitle .eyebrow.aqua{color:var(--aqua-acc)}
+  .ptitle .eyebrow.cozy{color:var(--cozy-acc)}
+  .ptitle .eyebrow.wild{color:var(--wild-acc)}
+  .ptitle .eyebrow.weather{color:var(--weather-acc)}
+  .ptitle .eyebrow.night{color:var(--night-acc)}
+  .ptitle .title{font-family:"Fraunces",serif;font-weight:300;font-size:24px;margin-top:2px;line-height:1.15}
+  .ptitle .sub{color:rgba(255,255,255,.55);font-size:11px;margin-top:4px;font-style:italic;font-family:"Fraunces",serif}
+
+  .mix{padding:10px 24px 8px}
+  .srow{display:flex;align-items:center;gap:10px;padding:10px 14px;margin-bottom:6px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden;cursor:pointer;user-select:none}
+  .srow.muted{opacity:.45}
+  .srow .ic{font-size:14px;width:18px;text-align:center;flex:0 0 18px;opacity:.85;z-index:2}
+  .srow .nm{flex:1;font-size:13px;font-weight:500;z-index:2}
+  .srow .vbar{position:absolute;left:0;top:0;bottom:0;pointer-events:none;border-radius:14px;transition:width .08s linear;background:linear-gradient(90deg,rgba(232,200,150,.22),rgba(232,200,150,.08))}
+  .srow .knob{position:absolute;top:50%;width:2px;height:60%;transform:translate(-1px,-50%);border-radius:1px;pointer-events:none;transition:left .08s linear;background:var(--gold)}
+  .srow .pct{font-size:10px;font-weight:600;color:rgba(255,255,255,.5);font-variant-numeric:tabular-nums;z-index:2;width:24px;text-align:right}
+  .add-sound{display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:14px;border:1px dashed rgba(255,255,255,.18);font-size:12px;font-weight:500;color:rgba(255,255,255,.55);margin-top:4px;cursor:pointer}
+
+  .insight{margin:10px 24px 0;padding:13px 16px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;gap:10px;align-items:flex-start;transform:translateY(8px);opacity:0;transition:all .5s ease}
+  .insight.show{transform:translateY(0);opacity:1}
+  .insight .ic{font-size:13px;margin-top:1px}
+  .insight .body{flex:1;font-size:11.5px;line-height:1.45;color:rgba(255,255,255,.75)}
+  .insight .body b{color:#fff;font-weight:600}
+  .insight .body .src{display:block;color:rgba(255,255,255,.4);font-size:9.5px;margin-top:4px;font-style:italic}
+  .insight .x{color:rgba(255,255,255,.4);font-size:13px;cursor:pointer}
+
+  .pcontrols{position:absolute;bottom:36px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:0 50px;z-index:40}
+  .pc{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.08);display:grid;place-items:center;font-size:15px;color:#fff;backdrop-filter:blur(10px);cursor:pointer}
+  .pc.big{width:70px;height:70px;background:rgba(255,255,255,.95);color:#0a0907;font-size:20px;box-shadow:0 16px 40px -10px rgba(255,255,255,.3)}
+  .pc.heart{color:#ff7a90;font-size:17px}
+  .pc.heart.on{color:#ff5577}
+
+  /* ============ JOURNAL PAYWALL ============ */
+  #account{padding:80px 28px 40px;background:radial-gradient(ellipse at top,#1c1814,#040303 70%);height:100%;display:flex;flex-direction:column;position:relative;overflow:hidden}
+  #account .topo{opacity:.05}
+  #account .eyebrow{font-family:"Caveat",cursive;color:var(--gold);font-size:18px;opacity:.85;position:relative;z-index:2;margin-top:auto}
+  #account .hd{font-family:"Fraunces",serif;font-weight:300;font-size:28px;letter-spacing:-.02em;line-height:1.1;margin-top:6px;position:relative;z-index:2}
+  #account .lede{color:var(--muted);font-size:14px;line-height:1.5;margin-top:10px;position:relative;z-index:2}
+  #account .actions{margin-top:auto;padding-top:24px;display:flex;flex-direction:column;gap:10px;position:relative;z-index:2}
+  #account .legal{text-align:center;color:var(--muted);font-size:10px;margin-top:14px;position:relative;z-index:2}
+
+  #paywall{padding:60px 28px 30px;background:linear-gradient(180deg,#f4ecdb 0%,#e8dfc7 100%);color:var(--ink);height:100%;display:flex;flex-direction:column;position:relative;overflow:hidden}
+  #paywall::before{content:"";position:absolute;inset:0;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='400'><filter id='n'><feTurbulence baseFrequency='1.2' numOctaves='3'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .25  0 0 0 0 .12  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");pointer-events:none;mix-blend-mode:multiply}
+  #paywall::after{content:"";position:absolute;top:0;bottom:0;left:30px;width:1px;background:linear-gradient(180deg,transparent,rgba(180,140,80,.3),transparent);pointer-events:none}
+  #paywall .x{position:absolute;top:50px;right:24px;width:32px;height:32px;border-radius:50%;background:rgba(26,22,16,.1);display:grid;place-items:center;color:var(--ink);font-size:16px;cursor:pointer;z-index:5;border:1px solid rgba(26,22,16,.15)}
+  #paywall .pw-header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px dashed rgba(26,22,16,.25);padding-bottom:14px;position:relative;z-index:3;margin-top:30px}
+  #paywall .pw-header .left{font-family:"Caveat",cursive;font-size:18px;color:var(--ink);opacity:.7}
+  #paywall .pw-header .right{font-family:"Caveat",cursive;font-size:14px;color:var(--ink);opacity:.5}
+  #paywall .pw-title{font-family:"Fraunces",serif;font-weight:300;font-size:38px;letter-spacing:-.02em;line-height:1;margin:20px 0 6px;color:var(--ink);position:relative;z-index:3}
+  #paywall .pw-sub{font-family:"Fraunces",serif;font-style:italic;font-size:15px;color:rgba(26,22,16,.6);position:relative;z-index:3}
+  #paywall .pw-quote{margin-top:24px;padding-left:14px;border-left:2px solid rgba(180,140,80,.5);font-family:"Caveat",cursive;font-size:20px;color:rgba(26,22,16,.85);line-height:1.4;position:relative;z-index:3}
+  #paywall .pw-list{margin-top:24px;position:relative;z-index:3}
+  #paywall .pw-list .item{display:flex;align-items:flex-start;gap:10px;padding:6px 0;font-family:"Fraunces",serif;font-size:14px;color:var(--ink)}
+  #paywall .pw-list .item .x{font-family:"Caveat",cursive;color:var(--gold);font-size:16px;line-height:1;width:18px;flex:0 0 18px;background:none;border:none;height:auto;border-radius:0;position:static}
+  #paywall .pw-list .item .x::before{content:"✦"}
+  #paywall .pw-plan{margin-top:22px;padding:16px;border:1.5px dashed rgba(180,140,80,.5);border-radius:0;background:rgba(255,250,238,.3);position:relative;z-index:3}
+  #paywall .pw-plan .row{display:flex;justify-content:space-between;align-items:baseline}
+  #paywall .pw-plan .label{font-family:"Fraunces",serif;font-style:italic;font-size:14px;color:var(--ink)}
+  #paywall .pw-plan .price{font-family:"Fraunces",serif;font-weight:400;font-size:22px;color:var(--ink)}
+  #paywall .pw-plan .trial{font-family:"Caveat",cursive;font-size:15px;color:var(--gold);margin-top:4px}
+  #paywall .pw-plan.alt{margin-top:8px;padding:10px 16px;opacity:.55}
+  #paywall .pw-plan.alt .price{font-size:16px}
+  #paywall .pw-cta{margin-top:auto;padding-top:18px;position:relative;z-index:3}
+  #paywall .pw-cta button{height:54px;border-radius:999px;background:var(--ink);color:var(--paper);width:100%;font-family:"Fraunces",serif;font-weight:400;font-size:16px;border:0;cursor:pointer;letter-spacing:.02em}
+  #paywall .pw-foot{text-align:center;font-family:"Caveat",cursive;font-size:14px;color:rgba(26,22,16,.5);margin-top:10px;position:relative;z-index:3}
+  #paywall .stamp{position:absolute;top:90px;right:28px;width:90px;height:90px;border:2px solid rgba(180,80,60,.65);border-radius:50%;display:grid;place-items:center;color:rgba(180,80,60,.7);font-family:"Caveat",cursive;font-size:14px;line-height:1;text-align:center;transform:rotate(-10deg);z-index:4;opacity:.85}
+  #paywall .stamp::before{content:"";position:absolute;inset:5px;border:1px solid rgba(180,80,60,.4);border-radius:50%}
+
+  /* ============ HOME ============ */
+  #home{position:relative;height:100%;padding:56px 24px 100px;overflow:auto;background:#03020a}
+  .cosmos{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+  .cosmos .galaxy{position:absolute;width:140%;height:80%;top:-10%;left:-20%;background:radial-gradient(ellipse at 30% 40%, rgba(232,200,150,.18) 0%, transparent 25%),radial-gradient(ellipse at 70% 30%, rgba(155,180,255,.18) 0%, transparent 25%),radial-gradient(ellipse at 50% 60%, rgba(200,184,255,.14) 0%, transparent 30%);filter:blur(40px);animation:s-spin 80s linear infinite}
+  .cosmos .nebula-band{position:absolute;width:120%;height:200px;top:35%;left:-10%;background:radial-gradient(ellipse at 50% 50%,rgba(60,40,100,.5),transparent 70%);filter:blur(30px);opacity:.6}
+  .star{position:absolute;background:#fff;border-radius:50%;animation:s-twk 4s ease-in-out infinite}
+  .star.s1{width:1px;height:1px}.star.s2{width:1.5px;height:1.5px}.star.s3{width:2px;height:2px;box-shadow:0 0 3px rgba(255,255,255,.8)}.star.s4{width:2.5px;height:2.5px;box-shadow:0 0 4px #fff,0 0 8px rgba(232,200,150,.5)}
+
+  .greet{position:relative;z-index:2;padding:14px 4px 12px}
+  .greet .date{font-family:"Caveat",cursive;font-size:18px;color:var(--gold);opacity:.7}
+  .greet .h{font-family:"Fraunces",serif;font-weight:300;font-size:30px;letter-spacing:-.02em;line-height:1.1;margin-top:4px}
+  .greet .h .name{font-style:italic;color:var(--gold);font-family:"Caveat",cursive;font-weight:500;font-size:34px}
+  .greet .check{margin-top:10px;font-family:"Fraunces",serif;font-style:italic;font-size:14px;color:var(--muted)}
+
+  /* Tonight card */
+  .tonight{position:relative;border-radius:24px;overflow:hidden;height:220px;margin-top:14px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;padding:18px 20px;box-shadow:0 30px 60px -20px rgba(0,0,0,.7),inset 0 0 0 1px rgba(232,200,150,.18);z-index:2}
+  .tonight.atmos-night{background:linear-gradient(135deg,var(--night-1),var(--night-2) 60%,var(--night-3))}
+  .tonight.atmos-aqua{background:linear-gradient(135deg,var(--aqua-1),var(--aqua-2) 60%,var(--aqua-3))}
+  .tonight.atmos-cozy{background:linear-gradient(135deg,var(--cozy-1),var(--cozy-2) 60%,var(--cozy-3))}
+  .tonight .corner{position:absolute;width:14px;height:14px;border:1px solid rgba(232,200,150,.5);opacity:.7;z-index:3}
+  .tonight .corner.tl{top:8px;left:8px;border-right:0;border-bottom:0}
+  .tonight .corner.tr{top:8px;right:8px;border-left:0;border-bottom:0}
+  .tonight .corner.bl{bottom:8px;left:8px;border-right:0;border-top:0}
+  .tonight .corner.br{bottom:8px;right:8px;border-left:0;border-top:0}
+  .tonight .top{display:flex;justify-content:space-between;color:rgba(255,255,255,.85);font-family:"Caveat",cursive;font-size:14px;z-index:3;position:relative}
+  .tonight .body{z-index:3;position:relative}
+  .tonight .invite{font-family:"Caveat",cursive;font-size:16px;color:rgba(255,255,255,.85);margin-bottom:4px}
+  .tonight .name{font-family:"Fraunces",serif;font-weight:300;font-size:28px;line-height:1.05;letter-spacing:-.01em;color:#fff;max-width:240px}
+  .tonight .why{font-size:11px;color:rgba(255,255,255,.7);margin-top:8px;line-height:1.4;font-family:"Fraunces",serif;font-style:italic;max-width:250px}
+  .tonight .go{position:absolute;right:20px;bottom:20px;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.95);color:#0a0907;display:grid;place-items:center;font-size:18px;z-index:4}
+  .tonight .stars span{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:s-twk 4s ease-in-out infinite}
+
+  /* journal section headers */
+  .jdiv{position:relative;display:flex;align-items:center;gap:10px;color:var(--gold);font-family:"Caveat",cursive;font-size:16px;margin:22px 2px 10px;opacity:.85;z-index:2}
+  .jdiv::before,.jdiv::after{content:"";flex:1;border-bottom:1px dotted rgba(232,200,150,.35)}
+
+  /* recently */
+  .recent{display:flex;gap:10px;overflow-x:auto;margin:0 -24px;padding:0 24px 4px;scrollbar-width:none;position:relative;z-index:2}
+  .recent::-webkit-scrollbar{display:none}
+  .place-tile{flex:0 0 auto;width:140px;cursor:pointer}
+  .place-tile .art{height:140px;border-radius:14px;position:relative;overflow:hidden;border:1px solid rgba(232,200,150,.1)}
+  .place-tile .art::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.18),transparent 60%)}
+  .place-tile.atmos-aqua .art{background:linear-gradient(135deg,var(--aqua-1),var(--aqua-3))}
+  .place-tile.atmos-cozy .art{background:linear-gradient(135deg,var(--cozy-1),var(--cozy-3))}
+  .place-tile.atmos-wild .art{background:linear-gradient(135deg,var(--wild-1),var(--wild-3))}
+  .place-tile.atmos-weather .art{background:linear-gradient(135deg,var(--weather-1),var(--weather-3))}
+  .place-tile.atmos-night .art{background:linear-gradient(135deg,var(--night-1),var(--night-3))}
+  .place-tile .nm{font-family:"Fraunces",serif;font-weight:400;font-size:13px;margin-top:8px;line-height:1.2}
+  .place-tile .when{font-family:"Caveat",cursive;font-size:13px;color:var(--muted);margin-top:2px}
+
+  /* goal rows on home */
+  .goal-pill{position:relative;display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;background:rgba(255,243,224,.04);border:1px solid var(--line);cursor:pointer;margin-bottom:8px;z-index:2;overflow:hidden}
+  .goal-pill .em{font-size:18px}
+  .goal-pill .nm{font-family:"Fraunces",serif;font-size:16px;flex:1}
+  .goal-pill .ct{font-family:"Caveat",cursive;font-size:14px;color:var(--muted)}
+  .goal-pill .arr{color:var(--muted);font-size:14px}
+
+  /* tab bar */
+  .tabbar{position:absolute;bottom:0;left:0;right:0;height:84px;background:rgba(10,9,7,.88);backdrop-filter:blur(20px);border-top:1px solid var(--line);display:flex;justify-content:space-around;align-items:center;padding-bottom:22px;z-index:60}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.04em;cursor:pointer;width:56px}
+  .tab .ic{width:22px;height:22px;display:grid;place-items:center;font-size:17px}
+  .tab.active{color:var(--text)}
+  .tab.fab{background:linear-gradient(135deg,#f4eee3,var(--gold));color:#0a0907;width:54px;height:54px;border-radius:50%;margin-top:-22px;font-size:26px;box-shadow:0 12px 28px -8px rgba(232,200,150,.6)}
+
+  .hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(20,18,14,.94);border:1px solid var(--line-2);padding:10px 18px;border-radius:999px;font-size:12px;color:var(--text);backdrop-filter:blur(10px);z-index:200;opacity:0;transition:opacity .3s;pointer-events:none}
+  .hint.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <span class="badge">v4 · journal</span>
+  <h1>Faraway prototype v4</h1>
+  <p>Animated cosmos splash · goal pick · matched stat · daily check-in · prompt · journal-style paywall · app. Non-generic, journal aesthetic throughout.</p>
+  <div class="controls">
+    <span class="ctl" id="reset">↻ Restart from splash</span>
+    <span class="ctl" id="skip">⤳ Skip to home</span>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="notch"></div>
+  <div class="status">9:41</div>
+  <div class="status-r">●●● 96</div>
+
+  <!-- 1. SPLASH -->
+  <div class="scene on" id="scene-splash">
+    <div id="splash">
+      <div class="cosmos" id="splash-cosmos"></div>
+      <div class="galaxy"></div>
+      <div class="nebula"></div>
+      <div class="center-glow"></div>
+      <div class="splash-orbit o1"></div>
+      <div class="splash-orbit o2"></div>
+      <div class="splash-orbit o3"></div>
+      <div class="ws">
+        <div class="wordmark">faraway</div>
+        <div class="tag">go somewhere, instantly</div>
+      </div>
+      <div class="footer">tap to begin</div>
+    </div>
+  </div>
+
+  <!-- 2. GOAL -->
+  <div class="scene" id="scene-goal">
+    <div id="goal">
+      <div class="topo"></div>
+      <div class="eyebrow">first ↓</div>
+      <div class="hd">What brings you<br/>here tonight?</div>
+      <div class="lede">Just one — we'll tune the whole journey around it.</div>
+      <div class="goal-stack">
+        <div class="goal-row sleep" data-goal="sleep"><div class="glow"></div><div class="em">🌙</div><div class="body"><div class="nm">Sleep</div><div class="desc">drift off, stay under</div></div></div>
+        <div class="goal-row focus" data-goal="focus"><div class="glow"></div><div class="em">🎯</div><div class="body"><div class="nm">Focus</div><div class="desc">deep work, no pull-outs</div></div></div>
+        <div class="goal-row relax" data-goal="relax"><div class="glow"></div><div class="em">🌿</div><div class="body"><div class="nm">Relax</div><div class="desc">unwind, decompress</div></div></div>
+        <div class="goal-row meditate" data-goal="meditate"><div class="glow"></div><div class="em">🧘</div><div class="body"><div class="nm">Meditate</div><div class="desc">be present, breathe slow</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. STAT (one matched stat for the goal) -->
+  <div class="scene" id="scene-stat">
+    <div id="stat">
+      <div class="topo"></div>
+      <div class="annotation a1" id="anno1">↑ that's a lot</div>
+      <div class="annotation a2" id="anno2">peer-reviewed.</div>
+      <div class="field">
+        <div class="label" id="st-label">For sleep:</div>
+        <div class="big" id="st-big">38<span class="unit">%</span></div>
+        <div class="quote" id="st-quote">"White noise cuts time to fall asleep by 38%."</div>
+        <div class="src" id="st-src">2017 clinical study</div>
+        <div class="meta">why we're going to help</div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="st-cta" onclick="goto('checkin')">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. CHECK-IN -->
+  <div class="scene" id="scene-checkin">
+    <div id="checkin">
+      <div class="topo"></div>
+      <div class="eyebrow">today's check-in</div>
+      <div class="hd" id="ci-hd">How's your sleep<br/>been this week?</div>
+      <div class="sub">Honest. We won't share it. It'll only shape what we suggest.</div>
+      <div class="scale">
+        <div class="scale-row" id="scale-row">
+          <div class="scale-dot" data-v="1">1</div>
+          <div class="scale-dot" data-v="2">2</div>
+          <div class="scale-dot sel" data-v="3">3</div>
+          <div class="scale-dot" data-v="4">4</div>
+          <div class="scale-dot" data-v="5">5</div>
+        </div>
+        <div class="scale-labels"><span id="ci-low">rough</span><span id="ci-high">great</span></div>
+        <div class="scale-current" id="ci-current">— some nights better than others</div>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="goto('ob-prompt')">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. PROMPT -->
+  <div class="scene" id="scene-ob-prompt">
+    <div id="ob-prompt">
+      <div class="topo"></div>
+      <div class="eyebrow">now, the magic</div>
+      <div class="hd">Where do you<br/>want to go?</div>
+      <div class="lede">A place. Any place. Real or imagined.</div>
+      <div class="input-wrap">
+        <textarea id="ob-input" rows="3" placeholder="e.g. Greek island balcony, distant waves, cutlery clinking far away…"></textarea>
+      </div>
+      <div class="ideas-h">or one of these</div>
+      <div class="ideas" id="ob-ideas"></div>
+      <button class="btn gen-btn-fixed" id="ob-gen-btn" disabled onclick="startGen()">Take me there</button>
+    </div>
+  </div>
+
+  <!-- 6. LOADER -->
+  <div class="scene" id="scene-loader">
+    <div id="loader">
+      <div class="topo"></div>
+      <div class="gen-rings"><div class="r"></div><div class="r"></div><div class="r"></div><div class="core"></div></div>
+      <div class="l-label">building the place</div>
+      <div class="l-echo" id="l-echo">Greek island balcony…</div>
+      <div class="l-step" id="l-step">listening for the right sounds</div>
+    </div>
+  </div>
+
+  <!-- 7. PLAYER -->
+  <div class="scene" id="scene-player">
+    <div id="player">
+      <div class="grain"></div>
+      <div class="pt">
+        <div class="close" id="pl-close">×</div>
+        <div class="ctx" id="pl-ctx">Visiting</div>
+        <div class="more">···</div>
+      </div>
+      <div class="viz" id="pl-viz"></div>
+      <div class="ptitle">
+        <div class="eyebrow" id="pl-eyebrow">you're here</div>
+        <div class="title" id="pl-title">Greek island balcony</div>
+        <div class="sub" id="pl-sub"></div>
+      </div>
+      <div class="mix" id="pl-mix"></div>
+      <div class="insight" id="pl-insight">
+        <span class="ic">✦</span>
+        <div class="body" id="pl-insight-body"></div>
+        <span class="x" id="pl-insight-x">×</span>
+      </div>
+      <div class="pcontrols">
+        <div class="pc" title="Tune">≡</div>
+        <div class="pc big" id="pl-play">❚❚</div>
+        <div class="pc heart" id="pl-heart">♥</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. ACCOUNT -->
+  <div class="scene" id="scene-account">
+    <div id="account">
+      <div class="topo"></div>
+      <div class="eyebrow">before you go further</div>
+      <div class="hd">Save the places<br/>you visit.</div>
+      <div class="lede">Sign in so your sounds and journey follow you across devices.</div>
+      <div class="actions">
+        <button class="btn dark" onclick="goto('paywall')"> Continue with Apple</button>
+        <button class="btn ghost" onclick="goto('paywall')">Continue with Google</button>
+        <button class="btn ghost" onclick="goto('paywall')">Continue with Email</button>
+        <div class="legal">By continuing you agree to Terms & Privacy</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. PAYWALL (journal style) -->
+  <div class="scene" id="scene-paywall">
+    <div id="paywall">
+      <div class="x" onclick="enterHome()">×</div>
+      <div class="stamp">7 days<br/>free</div>
+      <div class="pw-header">
+        <div class="left">— faraway —</div>
+        <div class="right">no. 001 · 2026</div>
+      </div>
+      <div class="pw-title">Become<br/>a traveler.</div>
+      <div class="pw-sub">Faraway Plus · the full membership</div>
+      <div class="pw-quote">"Some places are only reachable through sound."</div>
+      <div class="pw-list">
+        <div class="item"><span class="x"></span>Unlimited prompts & saved places</div>
+        <div class="item"><span class="x"></span>Sleep timer & background play</div>
+        <div class="item"><span class="x"></span>The Atlas of your week — a map of every journey</div>
+        <div class="item"><span class="x"></span>Full sound library, 300+ elements</div>
+      </div>
+      <div class="pw-plan">
+        <div class="row"><div class="label">Annual membership</div><div class="price">$49.99/yr</div></div>
+        <div class="trial">includes 7-day free trial — cancel anytime</div>
+      </div>
+      <div class="pw-plan alt">
+        <div class="row"><div class="label">Monthly</div><div class="price">$9.99/mo</div></div>
+      </div>
+      <div class="pw-cta">
+        <button onclick="enterHome()">Begin your trial</button>
+      </div>
+      <div class="pw-foot">— signed, Faraway —</div>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="scene" id="scene-home">
+    <div id="home">
+      <div class="cosmos" id="cosmos"></div>
+      <div class="greet">
+        <div class="date" id="home-date">Tuesday, May 16</div>
+        <div class="h">Good evening,<br/><span class="name">Roni.</span></div>
+        <div class="check" id="home-check">You said your sleep's been a 3 / 5 lately — let's see what tonight brings.</div>
+      </div>
+
+      <div class="tonight atmos-night" id="tonight" onclick="goRecommended()">
+        <div class="corner tl"></div><div class="corner tr"></div>
+        <div class="corner bl"></div><div class="corner br"></div>
+        <div class="grain"></div>
+        <div class="stars">
+          <span style="top:14%;left:20%"></span><span style="top:30%;left:65%;animation-delay:1s"></span>
+          <span style="top:50%;left:18%;animation-delay:1.6s"></span><span style="top:18%;left:80%;animation-delay:.7s"></span>
+        </div>
+        <div class="top"><span>★ tonight's place</span><span id="t-fresh">refreshed 6:00 pm</span></div>
+        <div class="body">
+          <div class="invite" id="t-invite">made for this hour, this weather, you</div>
+          <div class="name" id="t-name">Rain on a tent</div>
+          <div class="why" id="t-why">It's raining outside — pair it with your top sleep place.</div>
+        </div>
+        <div class="go">▶</div>
+      </div>
+
+      <div class="jdiv">recent journeys</div>
+      <div class="recent" id="recent"></div>
+
+      <div class="jdiv">your goals</div>
+      <div style="position:relative;z-index:2">
+        <div class="goal-pill" data-go="sleep"><span class="em">🌙</span><span class="nm">Sleep</span><span class="ct">3 places</span><span class="arr">›</span></div>
+        <div class="goal-pill" data-go="focus"><span class="em">🎯</span><span class="nm">Focus</span><span class="ct">2 places</span><span class="arr">›</span></div>
+        <div class="goal-pill" data-go="relax"><span class="em">🌿</span><span class="nm">Relax</span><span class="ct">1 place</span><span class="arr">›</span></div>
+        <div class="goal-pill" data-go="meditate"><span class="em">🧘</span><span class="nm">Meditate</span><span class="ct">just starting</span><span class="arr">›</span></div>
+      </div>
+    </div>
+    <div class="tabbar">
+      <div class="tab active" data-tab="home"><div class="ic">⌂</div>Home</div>
+      <div class="tab" data-tab="atlas"><div class="ic">⊞</div>Atlas</div>
+      <div class="tab fab" data-tab="create">+</div>
+      <div class="tab" data-tab="journal"><div class="ic">◉</div>Journal</div>
+      <div class="tab" data-tab="you"><div class="ic">◔</div>You</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="hint" id="hint"></div>
+
+<script>
+// ============ DATA ============
+const goalData = {
+  sleep:    { name:"Sleep", em:"🌙",
+              stat:{label:"For sleep:",big:"38",unit:"%",quote:'"White noise cuts time to fall asleep by 38%."',src:"2017 clinical study",meta:"the science we'll lean on"},
+              checkin:{hd:"How's your sleep<br/>been this week?", low:"rough", high:"great",
+                       captions:["— it's been hard to sleep","— often restless","— some nights better than others","— mostly good","— sleeping deeply"]},
+              prompt:{lede:"A place where it's easy to drift off."}, atmosDefault:"weather",
+              defaultPrompt:"Rain on a tent, distant thunder, no wind."
+            },
+  focus:    { name:"Focus", em:"🎯",
+              stat:{label:"For focus:",big:"70",unit:"dB",quote:'"Ambient sound at ~70 dB boosts creative problem-solving."',src:"Journal of Consumer Research",meta:"the science we'll lean on"},
+              checkin:{hd:"How's your focus<br/>been lately?", low:"scattered", high:"sharp",
+                       captions:["— scattered, can't settle","— pulled in many directions","— some good stretches","— mostly steady","— sharp & deep"]},
+              prompt:{lede:"A place that holds your attention without pulling it."}, atmosDefault:"cozy",
+              defaultPrompt:"Library, soft hum, page turns, distant footsteps."
+            },
+  relax:    { name:"Relax", em:"🌿",
+              stat:{label:"For relaxing:",big:"32",unit:"%",quote:'"Singing lowers cortisol by up to 32%."',src:"Frontiers in Psychology",meta:"the science we'll lean on"},
+              checkin:{hd:"How wound up<br/>are you today?", low:"very tense", high:"very calm",
+                       captions:["— very tense","— wound up","— somewhere in between","— mostly calm","— very calm"]},
+              prompt:{lede:"A place to let it all settle."}, atmosDefault:"aqua",
+              defaultPrompt:"Greek island balcony, distant waves, cutlery clinking, warm breeze."
+            },
+  meditate: { name:"Meditate", em:"🧘",
+              stat:{label:"For meditation:",big:"5.3→2.4",unit:"",quote:'"Singing-bowl meditation cut perceived stress scores from 5.3 to 2.4."',src:"PMC systematic review",meta:"the science we'll lean on"},
+              checkin:{hd:"Where's your mind<br/>right now?", low:"racing", high:"quiet",
+                       captions:["— racing","— restless","— wandering","— mostly steady","— quiet"]},
+              prompt:{lede:"A place to sit with yourself."}, atmosDefault:"wild",
+              defaultPrompt:"Morning fog, soft singing bowl, distant birds."
+            }
+};
+
+const places = {
+  "Greek island balcony": { atmos:"aqua", sub:"Distant waves · cutlery · breeze · cicadas",
+    mix:[{nm:"Distant waves",ic:"🌊",v:65},{nm:"Cutlery clinks",ic:"🍴",v:38},{nm:"Warm breeze",ic:"🌬",v:52},{nm:"Cicadas",ic:"🦗",v:22,muted:true}],
+    insight:'<b>Water sounds outperformed wind for cortisol recovery.</b> <span class="src">Michels & Hamers · Environment & Behavior, 2023</span>'
+  },
+  "Cabin in a snowstorm": { atmos:"cozy", sub:"Fire · wind · creaking wood",
+    mix:[{nm:"Fire crackle",ic:"🔥",v:70},{nm:"Wind outside",ic:"🌬",v:45},{nm:"Wood creak",ic:"⛓",v:30},{nm:"Snow tap",ic:"❄",v:18,muted:true}],
+    insight:'<b>Low broadband sounds (like wind & fire) steady attention</b> by masking distractions. <span class="src">Brain.fm research, 2023</span>'
+  },
+  "Old bookstore in Lisbon": { atmos:"cozy", sub:"Page turns · footsteps · rain outside",
+    mix:[{nm:"Page turns",ic:"📖",v:50},{nm:"Footsteps",ic:"👞",v:30},{nm:"Soft hum",ic:"⌁",v:42},{nm:"Rain outside",ic:"☔",v:38}],
+    insight:'<b>Ambient ~70 dB sound boosts creative problem-solving.</b> <span class="src">Mehta et al. · J. Consumer Research, 2012</span>'
+  },
+  "Tokyo hotel, 2am": { atmos:"cozy", sub:"Rain · distant traffic · AC",
+    mix:[{nm:"Soft rain",ic:"☔",v:68},{nm:"Distant traffic",ic:"🚖",v:40},{nm:"AC hum",ic:"❄",v:55},{nm:"Elevator ding",ic:"🛗",v:8,muted:true}],
+    insight:'<b>Pink-noise pulses timed to deep-sleep brainwaves tripled overnight memory recall.</b> <span class="src">Papalambros et al. · Frontiers, 2017</span>'
+  },
+  "Forest at dawn": { atmos:"wild", sub:"Early birds · soft wind · dew",
+    mix:[{nm:"Bird chorus",ic:"🐦",v:62},{nm:"Soft wind",ic:"🌬",v:40},{nm:"Distant brook",ic:"〰",v:30},{nm:"Leaves",ic:"🍃",v:25}],
+    insight:'<b>Forest soundscapes improve mood and restoration.</b> <span class="src">Scientific Reports, 2025</span>'
+  },
+  "Rain on a tent": { atmos:"weather", sub:"Soft rain · distant thunder · tent fabric · wind",
+    mix:[{nm:"Soft rain",ic:"☂",v:72},{nm:"Distant thunder",ic:"⚡",v:35},{nm:"Tent fabric",ic:"⛺",v:48},{nm:"Wind",ic:"🌬",v:12,muted:true}],
+    insight:'<b>Pink-noise pulses timed to deep-sleep brainwaves tripled overnight memory recall.</b> <span class="src">Papalambros et al. · Frontiers, 2017</span>'
+  },
+  "Train at night": { atmos:"night", sub:"Steady rhythm · low hum · steel",
+    mix:[{nm:"Steady clack",ic:"🚂",v:75},{nm:"Low hum",ic:"⌁",v:50},{nm:"Steel sway",ic:"⛓",v:35},{nm:"Announcer",ic:"📢",v:5,muted:true}],
+    insight:'<b>Rhythmic low-frequency sounds entrain breathing</b> toward slower rates.'
+  },
+  "Lake at dawn": { atmos:"aqua", sub:"Soft lap · early birds · mist",
+    mix:[{nm:"Soft lap",ic:"〰",v:60},{nm:"Distant birds",ic:"🐦",v:40},{nm:"Mist",ic:"☁",v:25},{nm:"Wood creak",ic:"⛵",v:15,muted:true}],
+    insight:'<b>Bird sounds aid stress recovery</b> across multiple studies.'
+  }
+};
+
+const startIdeasByGoal = {
+  sleep:["Rain on a tent","Cabin in a snowstorm","Train at night","Tokyo hotel, 2am"],
+  focus:["Library, soft hum, page turns","Old bookstore in Lisbon","Tokyo hotel, 2am","Mountain weather station"],
+  relax:["Greek island balcony","Lake at dawn","Cabin in a snowstorm","Forest at dawn"],
+  meditate:["Morning fog, soft singing bowl","Forest at dawn","Lake at dawn","Empty temple, soft bells"]
+};
+
+const atmosCores = { aqua:"#9be6f3", cozy:"#ffd0a0", wild:"#b8e0b8", weather:"#a6b8e6", night:"#c8b8ff" };
+
+// ============ STATE ============
+let state = { goal:null, checkinScore:3, placeName:"", atmos:null, playing:true, loved:false, lastVisited:[], _next:null };
+
+// ============ NAV ============
+let _splashTimer = null;
+function goto(id){
+  document.querySelectorAll(".scene").forEach(s=>s.classList.remove("on"));
+  const el = document.getElementById("scene-"+id);
+  if (el) el.classList.add("on");
+  if (id==="home") setTimeout(()=>{ const h=document.getElementById("home"); if(h) h.scrollTop=0; },0);
+  if (_splashTimer) { clearTimeout(_splashTimer); _splashTimer = null; }
+  if (id==="splash"){
+    buildSplashStars();
+    _splashTimer = setTimeout(()=>{ if (document.getElementById("scene-splash").classList.contains("on")) goto("goal"); }, 3500);
+  }
+}
+
+function hint(text){
+  const h = document.getElementById("hint");
+  h.textContent = text;
+  h.classList.add("show");
+  clearTimeout(window._h);
+  window._h = setTimeout(()=>h.classList.remove("show"), 2200);
+}
+
+// ============ SPLASH STARS ============
+function buildSplashStars(){
+  const el = document.getElementById("splash-cosmos");
+  if (!el || el.dataset.built) return;
+  el.dataset.built = "1";
+  for (let i=0;i<70;i++){
+    const cls = ["s1","s2","s3"][Math.floor(Math.random()*3)];
+    const s = document.createElement("span");
+    s.className = "splash-star "+cls;
+    s.style.top = (Math.random()*100)+"%";
+    s.style.left = (Math.random()*100)+"%";
+    s.style.animation = `s-twk ${3+Math.random()*4}s ease-in-out infinite ${Math.random()*4}s`;
+    el.appendChild(s);
+  }
+}
+buildSplashStars();
+_splashTimer = setTimeout(()=>{ if (document.getElementById("scene-splash").classList.contains("on")) goto("goal"); }, 3500);
+document.getElementById("scene-splash").addEventListener("click", ()=>goto("goal"));
+
+// ============ GOAL → STAT ============
+document.querySelectorAll("[data-goal]").forEach(g=>{
+  g.onclick = ()=>{
+    state.goal = g.dataset.goal;
+    setupStat();
+    goto("stat");
+  };
+});
+
+function setupStat(){
+  const g = goalData[state.goal];
+  document.getElementById("st-label").textContent = g.stat.label;
+  document.getElementById("st-big").innerHTML = g.stat.unit ? `${g.stat.big}<span class="unit">${g.stat.unit}</span>` : g.stat.big;
+  document.getElementById("st-quote").textContent = g.stat.quote;
+  document.getElementById("st-src").textContent = g.stat.src;
+  // Reset annotations per goal flavor
+  const a1 = {sleep:"↑ measurable",focus:"deep work zone",relax:"real drop",meditate:"5.3 → 2.4"}[state.goal];
+  const a2 = {sleep:"peer-reviewed.",focus:"published.",relax:"clinical.",meditate:"systematic review."}[state.goal];
+  document.getElementById("anno1").textContent = a1;
+  document.getElementById("anno2").textContent = a2;
+}
+
+// ============ CHECK-IN ============
+function enterCheckin(){
+  const g = goalData[state.goal];
+  document.getElementById("ci-hd").innerHTML = g.checkin.hd;
+  document.getElementById("ci-low").textContent = g.checkin.low;
+  document.getElementById("ci-high").textContent = g.checkin.high;
+  // default
+  document.querySelectorAll(".scale-dot").forEach(d=>d.classList.remove("sel"));
+  document.querySelector('.scale-dot[data-v="3"]').classList.add("sel");
+  state.checkinScore = 3;
+  document.getElementById("ci-current").textContent = g.checkin.captions[2];
+}
+
+document.querySelectorAll(".scale-dot").forEach(d=>{
+  d.onclick = ()=>{
+    document.querySelectorAll(".scale-dot").forEach(x=>x.classList.remove("sel"));
+    d.classList.add("sel");
+    state.checkinScore = +d.dataset.v;
+    const g = goalData[state.goal];
+    document.getElementById("ci-current").textContent = g.checkin.captions[state.checkinScore-1];
+  };
+});
+
+// Hook checkin enter on scene change
+const origGoto = goto;
+window.goto = function(id){
+  origGoto(id);
+  if (id==="checkin") enterCheckin();
+  if (id==="ob-prompt") setupPrompt();
+};
+
+// ============ PROMPT ============
+function setupPrompt(){
+  const g = goalData[state.goal];
+  document.querySelector("#ob-prompt .lede").textContent = g.prompt.lede;
+  document.getElementById("ob-input").value = "";
+  document.getElementById("ob-input").placeholder = "e.g. "+g.defaultPrompt;
+  const ideasEl = document.getElementById("ob-ideas");
+  ideasEl.innerHTML = "";
+  startIdeasByGoal[state.goal].forEach(i=>{
+    const c = document.createElement("div");
+    c.className = "idea";
+    c.textContent = i;
+    c.onclick = ()=>{ document.getElementById("ob-input").value = i; updateBtn(); };
+    ideasEl.appendChild(c);
+  });
+  updateBtn();
+}
+function updateBtn(){
+  document.getElementById("ob-gen-btn").disabled = document.getElementById("ob-input").value.trim().length < 3;
+}
+document.getElementById("ob-input").addEventListener("input", updateBtn);
+
+function lookupPlace(name){
+  if (places[name]) return { name, ...places[name] };
+  const n = name.toLowerCase();
+  let atmos = goalData[state.goal]?.atmosDefault || "night";
+  if (/(rain|thunder|snow|storm|fog)/.test(n)) atmos = "weather";
+  else if (/(sea|wave|ocean|lake|river|tide|beach|pond)/.test(n)) atmos = "aqua";
+  else if (/(forest|mountain|field|desert|wood|tree|prairie|tundra)/.test(n)) atmos = "wild";
+  else if (/(hotel|cabin|library|café|cafe|bookstore|room|home|kitchen|fire)/.test(n)) atmos = "cozy";
+  else if (/(train|night|street|city|port|empty)/.test(n)) atmos = "night";
+  return { name, atmos, sub:"A place you described",
+    mix:[{nm:"Base ambience",ic:"◌",v:65},{nm:"Texture",ic:"〰",v:42},{nm:"Movement",ic:"🌬",v:30},{nm:"Detail",ic:"✦",v:18,muted:true}],
+    insight:'<b>Your imagined places get a soundscape grounded in real acoustic patterns shown to reduce stress.</b> <span class="src">Stress · 2024 meta-analysis</span>'
+  };
+}
+
+function startGen(){
+  const txt = document.getElementById("ob-input").value.trim() || goalData[state.goal].defaultPrompt;
+  const p = lookupPlace(txt);
+  state.placeName = p.name; state.atmos = p.atmos;
+  goto("loader");
+  const ld = document.getElementById("loader");
+  ld.className = "atmos-"+p.atmos; ld.id = "loader";
+  ld.style.setProperty("--ring-c", atmosCores[p.atmos]);
+  ld.style.setProperty("--core-c", atmosCores[p.atmos]);
+  document.getElementById("l-echo").textContent = p.name;
+  const steps = ["listening for the right sounds","tuning the layers","almost there"];
+  let i=0; document.getElementById("l-step").textContent = steps[0];
+  const intv = setInterval(()=>{ i++; if(i<steps.length) document.getElementById("l-step").textContent = steps[i]; }, 900);
+  setTimeout(()=>{ clearInterval(intv); state._next = "account"; setupPlayer(p); goto("player"); }, 2800);
+}
+
+// ============ PLAYER ============
+function setupPlayer(p){
+  const pl = document.getElementById("player");
+  pl.className = "atmos-"+p.atmos; pl.id = "player";
+  document.getElementById("pl-ctx").textContent = `visiting · ${goalData[state.goal]?.name || ""}`;
+  const eyebrow = document.getElementById("pl-eyebrow");
+  eyebrow.className = "eyebrow " + p.atmos;
+  eyebrow.textContent = "you're here";
+  document.getElementById("pl-title").textContent = p.name;
+  document.getElementById("pl-sub").textContent = p.sub;
+  const viz = document.getElementById("pl-viz");
+  viz.className = "viz viz-"+p.atmos;
+  viz.innerHTML = vizHTML(p.atmos);
+  const mix = document.getElementById("pl-mix");
+  mix.innerHTML = "";
+  p.mix.forEach(s=>{
+    const row = document.createElement("div");
+    row.className = "srow" + (s.muted?" muted":"");
+    row.dataset.v = s.v;
+    row.innerHTML = `<div class="vbar" style="width:${s.v}%"></div><div class="knob" style="left:${s.v}%"></div><span class="ic">${s.ic}</span><span class="nm">${s.nm}</span><span class="pct">${s.v}</span>`;
+    attachSlider(row);
+    mix.appendChild(row);
+  });
+  const add = document.createElement("div");
+  add.className = "add-sound";
+  add.innerHTML = "＋ Add element";
+  add.onclick = ()=>hint("Opens the sound library");
+  mix.appendChild(add);
+  const insight = document.getElementById("pl-insight");
+  insight.classList.remove("show");
+  document.getElementById("pl-insight-body").innerHTML = p.insight;
+  setTimeout(()=>insight.classList.add("show"), 3500);
+  state.playing = true;
+  document.getElementById("pl-play").textContent = "❚❚";
+  state.loved = false;
+  document.getElementById("pl-heart").classList.remove("on");
+  recordVisit(p);
+}
+
+function vizHTML(atmos){
+  if (atmos==="aqua"){
+    let bubbles = "";
+    for (let i=0;i<6;i++) bubbles += `<div class="bubble" style="left:${10+Math.random()*80}%;animation-delay:${Math.random()*8}s;animation-duration:${6+Math.random()*4}s"></div>`;
+    return `<div class="caustic"></div><div class="ray r1"></div><div class="ray r2"></div><div class="ray r3"></div>${bubbles}`;
+  }
+  if (atmos==="cozy"){
+    let embers = "";
+    for (let i=0;i<8;i++) embers += `<div class="ember" style="left:${30+Math.random()*40}%;animation-delay:${Math.random()*5}s;animation-duration:${4+Math.random()*3}s"></div>`;
+    return `<div class="glow"></div><div class="hearth"></div><div class="flame-tongue f1"></div><div class="flame-tongue f2"></div><div class="flame-tongue f3"></div>${embers}`;
+  }
+  if (atmos==="wild") return `<div class="sky-glow"></div><div class="wsun"></div><div class="cloud c1"></div><div class="cloud c2"></div><div class="mtn"></div><div class="mtn front"></div><div class="grass"></div>`;
+  if (atmos==="weather"){
+    let rain = "";
+    for (let i=0;i<12;i++) rain += `<div class="rain near" style="left:${Math.random()*100}%;animation-delay:${Math.random()}s;animation-duration:${.7+Math.random()*.3}s"></div>`;
+    for (let i=0;i<12;i++) rain += `<div class="rain mid" style="left:${Math.random()*100}%;animation-delay:${Math.random()*1.2}s;animation-duration:${1+Math.random()*.4}s"></div>`;
+    for (let i=0;i<12;i++) rain += `<div class="rain far" style="left:${Math.random()*100}%;animation-delay:${Math.random()*1.4}s;animation-duration:${1.3+Math.random()*.5}s"></div>`;
+    return `<div class="stormcloud"></div><div class="lightning"></div>${rain}`;
+  }
+  if (atmos==="night"){
+    let stars = "";
+    for (let i=0;i<24;i++){
+      const cls = ["s1","s2","s3","s4"][Math.floor(Math.random()*4)];
+      stars += `<span class="${cls}" style="top:${Math.random()*80+5}%;left:${Math.random()*90+3}%;animation-delay:${Math.random()*4}s;width:${cls==='s4'?2.5:cls==='s3'?2:cls==='s2'?1.5:1}px;height:${cls==='s4'?2.5:cls==='s3'?2:cls==='s2'?1.5:1}px"></span>`;
+    }
+    return `<div class="aurora"></div><div class="nstars">${stars}</div><div class="moon"></div>`;
+  }
+}
+
+function attachSlider(row){
+  let dragging = false;
+  function setFromEvent(e){
+    const rect = row.getBoundingClientRect();
+    const x = (e.touches? e.touches[0].clientX : e.clientX) - rect.left;
+    let pct = Math.round(Math.max(0,Math.min(100, x/rect.width*100)));
+    row.querySelector(".vbar").style.width = pct+"%";
+    row.querySelector(".knob").style.left = pct+"%";
+    row.querySelector(".pct").textContent = pct;
+    row.dataset.v = pct;
+    if (pct < 5) row.classList.add("muted"); else row.classList.remove("muted");
+  }
+  row.addEventListener("mousedown", e=>{ dragging=true; setFromEvent(e); });
+  row.addEventListener("touchstart", e=>{ dragging=true; setFromEvent(e); }, {passive:true});
+  window.addEventListener("mousemove", e=>{ if (dragging) setFromEvent(e); });
+  window.addEventListener("touchmove", e=>{ if (dragging) setFromEvent(e); }, {passive:true});
+  window.addEventListener("mouseup", ()=>dragging=false);
+  window.addEventListener("touchend", ()=>dragging=false);
+}
+
+document.getElementById("pl-insight-x").onclick = ()=>document.getElementById("pl-insight").classList.remove("show");
+document.getElementById("pl-play").onclick = ()=>{
+  state.playing = !state.playing;
+  document.getElementById("pl-play").textContent = state.playing ? "❚❚" : "▶";
+};
+document.getElementById("pl-heart").onclick = ()=>{
+  state.loved = !state.loved;
+  document.getElementById("pl-heart").classList.toggle("on", state.loved);
+  hint(state.loved ? "Saved to your journal" : "Removed");
+};
+document.getElementById("pl-close").onclick = ()=>{
+  if (state._next === "account"){ state._next = null; goto("account"); }
+  else enterHome();
+};
+
+// ============ HOME ============
+function enterHome(){
+  if (state.lastVisited.length === 0 && state.placeName){
+    recordVisit({name:state.placeName, atmos:state.atmos});
+  }
+  if (state.lastVisited.length === 0){
+    state.lastVisited = [
+      {name:"Rain on a tent", atmos:"weather", when:"earlier"},
+      {name:"Train at night", atmos:"night", when:"mon"},
+      {name:"Cabin in a snowstorm", atmos:"cozy", when:"sun"}
+    ];
+  }
+  renderRecent();
+  setupTonight();
+  setupHomeCheck();
+  buildCosmos();
+  goto("home");
+}
+
+function recordVisit(item){
+  const it = {name:item.name, atmos:item.atmos, when:"just now"};
+  state.lastVisited = [it, ...state.lastVisited.filter(p => p.name !== it.name)].slice(0,6);
+  renderRecent();
+}
+
+function renderRecent(){
+  const el = document.getElementById("recent");
+  if (!el) return;
+  el.innerHTML = "";
+  state.lastVisited.forEach(p=>{
+    const t = document.createElement("div");
+    t.className = `place-tile atmos-${p.atmos}`;
+    t.innerHTML = `<div class="art"></div><div class="nm">${p.name}</div><div class="when">${p.when || ""}</div>`;
+    t.onclick = ()=>{
+      const place = lookupPlace(p.name);
+      state.placeName = place.name; state.atmos = place.atmos;
+      setupPlayer(place); goto("player");
+    };
+    el.appendChild(t);
+  });
+}
+
+function setupTonight(){
+  const hour = new Date().getHours();
+  let rec;
+  if (hour >= 21 || hour < 6) rec = {name:"Rain on a tent", atmos:"weather", invite:"made for tonight, the rain, the hour", why:"It's late and raining — pair it with your top sleep place."};
+  else if (hour >= 6 && hour < 11) rec = {name:"Lake at dawn", atmos:"aqua", invite:"for the start of the day", why:"Slow water + early birds — easier to ease in."};
+  else if (hour >= 11 && hour < 17) rec = {name:"Old bookstore in Lisbon", atmos:"cozy", invite:"for the middle of the day", why:"Paired with focus — your most-returned-to weekday spot."};
+  else rec = {name:"Greek island balcony", atmos:"aqua", invite:"for the slow end of the day", why:"Distant water + cutlery — your evening unwind go-to."};
+  const w = document.getElementById("tonight");
+  w.className = "tonight atmos-"+rec.atmos;
+  // re-add corners after className wipe
+  ["tl","tr","bl","br"].forEach(p=>{
+    if (!w.querySelector(`.corner.${p}`)){
+      const c = document.createElement("div"); c.className = `corner ${p}`; w.appendChild(c);
+    }
+  });
+  document.getElementById("t-invite").textContent = rec.invite;
+  document.getElementById("t-name").textContent = rec.name;
+  document.getElementById("t-why").textContent = rec.why;
+  state._tonight = rec;
+}
+
+function setupHomeCheck(){
+  if (!state.goal){
+    document.getElementById("home-check").textContent = "ready for tonight's place.";
+    return;
+  }
+  const g = goalData[state.goal];
+  const caption = g.checkin.captions[state.checkinScore-1];
+  document.getElementById("home-check").textContent = `you said your ${g.name.toLowerCase()}'s been a ${state.checkinScore} / 5 ${caption.replace(/^—\s*/, '— ')}.`;
+}
+
+function buildCosmos(){
+  const el = document.getElementById("cosmos");
+  if (!el || el.dataset.built) return;
+  el.dataset.built = "1";
+  el.innerHTML = `<div class="galaxy"></div><div class="nebula-band"></div>`;
+  for (let i=0;i<70;i++){
+    const cls = ["s1","s2","s3","s4"][Math.floor(Math.random()*4)];
+    const s = document.createElement("span");
+    s.className = "star "+cls;
+    s.style.top = (Math.random()*100)+"%";
+    s.style.left = (Math.random()*100)+"%";
+    s.style.animationDelay = (Math.random()*4)+"s";
+    s.style.animationDuration = (3+Math.random()*4)+"s";
+    el.appendChild(s);
+  }
+}
+
+function goRecommended(){
+  if (state._tonight){
+    const p = lookupPlace(state._tonight.name);
+    state.placeName = p.name; state.atmos = p.atmos;
+    setupPlayer(p); goto("player");
+  }
+}
+
+document.querySelectorAll("[data-go]").forEach(g=>{
+  g.onclick = ()=>{
+    state.goal = g.dataset.go;
+    setupPrompt();
+    goto("ob-prompt");
+  };
+});
+
+document.querySelectorAll("[data-tab]").forEach(t=>{
+  t.onclick = ()=>{
+    const id = t.dataset.tab;
+    if (id==="home") goto("home");
+    else if (id==="create") goto("ob-prompt");
+    else hint(`${id[0].toUpperCase()+id.slice(1)} — coming soon`);
+  };
+});
+
+// Dev controls
+document.getElementById("reset").onclick = ()=>{
+  state = { goal:null, checkinScore:3, placeName:"", atmos:null, playing:true, loved:false, lastVisited:[], _next:null };
+  document.getElementById("ob-input").value = "";
+  document.getElementById("ob-gen-btn").disabled = true;
+  goto("splash");
+};
+document.getElementById("skip").onclick = ()=>{ state.goal="sleep"; state.checkinScore=3; enterHome(); };
+</script>
+
+</body>
+</html>
