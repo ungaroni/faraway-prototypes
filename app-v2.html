@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Faraway · updates v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,200;9..144,300;9..144,400&family=Caveat:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#02020a; --text:#fff; --muted:#9a98a8;
+    --accent:#a78bfa; --accent-bright:#c4b1ff;
+    --gold:#e8c896; --gold-bright:#f4d8a8;
+    --line:rgba(255,255,255,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#0a080f;color:#fff;font-family:"Inter",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+  body{display:flex;flex-direction:column;align-items:center;padding:48px 24px}
+  h1{font-family:"Fraunces",serif;font-weight:200;font-size:32px;letter-spacing:-.02em;margin:0 0 6px}
+  .lede{color:var(--muted);font-size:14px;margin:0 0 36px;font-family:"Fraunces",serif;font-style:italic;text-align:center;max-width:640px}
+  .row{display:flex;gap:36px;flex-wrap:wrap;justify-content:center}
+  .section-label{width:100%;text-align:center;color:var(--accent-bright);font-family:"Caveat",cursive;font-size:18px;margin:36px 0 14px}
+  .section-label small{display:block;color:var(--muted);font-family:"Inter",sans-serif;font-style:normal;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;margin-bottom:2px}
+  .col{display:flex;flex-direction:column;align-items:center}
+  .label{margin-bottom:14px;font-family:"Caveat",cursive;font-size:18px;color:var(--accent-bright);text-align:center}
+  .label small{display:block;color:var(--muted);font-family:"Inter",sans-serif;font-style:normal;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;margin-bottom:2px}
+  .next-tag{display:inline-block;padding:4px 10px;border-radius:999px;background:rgba(167,139,250,.18);border:1px solid rgba(167,139,250,.4);color:var(--accent-bright);font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px}
+
+  .phone{position:relative;width:390px;height:844px;border-radius:46px;background:var(--bg);overflow:hidden;box-shadow:0 60px 120px -30px rgba(0,0,0,.9),0 0 0 12px #1a181f,0 0 0 13px rgba(255,255,255,.06)}
+  .notch{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:120px;height:30px;background:#000;border-radius:20px;z-index:80}
+  .status{position:absolute;top:18px;left:28px;font-size:14px;font-weight:600;z-index:70;color:#fff;mix-blend-mode:difference}
+  .status-r{position:absolute;top:18px;right:28px;font-size:13px;font-weight:600;z-index:70;color:#fff;mix-blend-mode:difference}
+  .home-indicator{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:120px;height:4px;background:rgba(255,255,255,.5);border-radius:2px;z-index:80}
+
+  .galaxy{position:absolute;inset:0;pointer-events:none;z-index:0}
+  .star{position:absolute;background:#fff;border-radius:50%;opacity:.35;animation:twk 5s ease-in-out infinite}
+  .star.s1{width:1px;height:1px}.star.s2{width:1.5px;height:1.5px}.star.s3{width:2px;height:2px;box-shadow:0 0 3px rgba(255,255,255,.5)}
+  @keyframes twk{0%,100%{opacity:.15}50%{opacity:.6}}
+
+  /* ===== NEW TAB BAR — 3 tabs + settings wheel ===== */
+  .tabbar{
+    position:absolute;
+    bottom:0;left:0;right:0;
+    height:84px;
+    background:rgba(5,4,10,.92);
+    backdrop-filter:blur(20px);
+    border-top:1px solid var(--line);
+    display:flex;justify-content:space-around;align-items:center;
+    padding-bottom:22px;z-index:60;
+  }
+  .tab{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.04em;cursor:pointer;width:60px}
+  .tab .ic{width:22px;height:22px;display:grid;place-items:center;font-size:17px}
+  .tab.active{color:#fff}
+  .tab.create{color:var(--gold)}
+  .tab.create.active{color:var(--gold-bright)}
+
+  /* Settings wheel — top right */
+  .settings-wheel{position:absolute;top:60px;right:20px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.05);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);font-size:16px;cursor:pointer;z-index:30;backdrop-filter:blur(10px)}
+
+  /* ===== Mini player ===== */
+  .miniplayer{
+    position:absolute;bottom:84px;left:8px;right:8px;
+    height:62px;border-radius:16px;
+    background:rgba(20,18,28,.85);backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,.1);
+    display:flex;align-items:center;gap:12px;padding:8px 14px 8px 8px;
+    z-index:50;box-shadow:0 12px 30px -10px rgba(0,0,0,.6);
+  }
+  .miniplayer .swatch{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,#0c1a1f,#2a3520,#5a8a5a);flex:0 0 46px;position:relative;overflow:hidden}
+  .miniplayer .swatch::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.18),transparent 60%)}
+  .miniplayer .meta{flex:1;min-width:0}
+  .miniplayer .nm{font-size:14px;font-weight:500;color:#fff;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .miniplayer .desc{font-family:"Caveat",cursive;font-size:12px;color:var(--muted);margin-top:2px}
+  .miniplayer .controls{display:flex;align-items:center;gap:4px;flex:0 0 auto}
+  .miniplayer .pc{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:14px;color:#fff;cursor:pointer}
+  .miniplayer .equalizer{display:flex;align-items:end;gap:2px;height:14px;margin-right:6px}
+  .miniplayer .equalizer span{width:2px;background:var(--accent-bright);border-radius:1px;animation:eq 1s ease-in-out infinite}
+  .miniplayer .equalizer span:nth-child(1){animation-delay:0s}
+  .miniplayer .equalizer span:nth-child(2){animation-delay:.15s}
+  .miniplayer .equalizer span:nth-child(3){animation-delay:.3s}
+  @keyframes eq{0%,100%{height:3px}50%{height:13px}}
+
+  /* ===================== HOME ===================== */
+  .stage{position:absolute;inset:0;background:var(--bg);padding:60px 22px 170px;overflow:auto}
+  .greet{position:relative;z-index:2;padding:14px 4px 16px}
+  .greet .h{font-family:"Fraunces",serif;font-weight:300;font-size:24px;letter-spacing:-.02em;line-height:1.1;color:#fff}
+  .greet .h .name{font-family:"Caveat",cursive;font-weight:500;font-style:italic;color:var(--gold);font-size:28px}
+  .greet .sub{color:var(--muted);font-size:12px;margin-top:6px;font-family:"Fraunces",serif;font-style:italic}
+
+  .tonight{position:relative;border-radius:24px;overflow:hidden;height:200px;margin-top:8px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;padding:18px 20px;box-shadow:0 30px 60px -20px rgba(0,0,0,.7),inset 0 0 0 1px rgba(232,200,150,.18);z-index:2;background:linear-gradient(135deg,#0a0e1c,#1a2238 50%,#3a4868)}
+  .tonight .rain-bg{position:absolute;inset:0;overflow:hidden;opacity:.5}
+  .tonight .raindrop{position:absolute;width:1px;height:14px;background:linear-gradient(180deg,transparent,rgba(166,184,230,.7));animation:t-rain 1.2s linear infinite}
+  @keyframes t-rain{0%{transform:translateY(-20px)}100%{transform:translateY(240px)}}
+  .tonight .corner{position:absolute;width:12px;height:12px;border:1px solid rgba(232,200,150,.5);opacity:.7;z-index:3}
+  .tonight .corner.tl{top:10px;left:10px;border-right:0;border-bottom:0}
+  .tonight .corner.tr{top:10px;right:10px;border-left:0;border-bottom:0}
+  .tonight .corner.bl{bottom:10px;left:10px;border-right:0;border-top:0}
+  .tonight .corner.br{bottom:10px;right:10px;border-left:0;border-top:0}
+  .tonight .top{display:flex;justify-content:space-between;color:rgba(255,255,255,.85);font-family:"Caveat",cursive;font-size:14px;z-index:3;position:relative}
+  .tonight .body{z-index:3;position:relative}
+  .tonight .invite{font-family:"Caveat",cursive;font-size:15px;color:rgba(255,255,255,.85);margin-bottom:4px}
+  .tonight .name{font-family:"Fraunces",serif;font-weight:200;font-size:24px;line-height:1.05;letter-spacing:-.01em;color:#fff;max-width:220px}
+  .tonight .why{font-size:10px;color:rgba(255,255,255,.7);margin-top:8px;line-height:1.4;font-family:"Fraunces",serif;font-style:italic;max-width:240px}
+  .tonight .go{position:absolute;right:20px;bottom:20px;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.95);color:#0a0907;display:grid;place-items:center;font-size:17px;z-index:4;box-shadow:0 12px 30px -8px rgba(0,0,0,.5)}
+
+  .section-h{display:flex;justify-content:space-between;align-items:baseline;margin:22px 2px 10px;position:relative;z-index:2}
+  .section-h .t{font-family:"Fraunces",serif;font-style:italic;font-size:15px;color:#fff}
+  .section-h .a{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+
+  /* RECENTLY VISITED — with animated atmosphere assets */
+  .recent{display:flex;gap:10px;overflow-x:auto;margin:0 -22px;padding:0 22px 4px;scrollbar-width:none;position:relative;z-index:2}
+  .recent::-webkit-scrollbar{display:none}
+  .place-tile{flex:0 0 auto;width:128px;cursor:pointer}
+  .place-tile .art{height:128px;border-radius:14px;position:relative;overflow:hidden;border:1px solid rgba(232,200,150,.12)}
+  .place-tile .nm{font-family:"Fraunces",serif;font-weight:400;font-size:13px;margin-top:8px;line-height:1.2;color:#fff}
+  .place-tile .feel{font-family:"Caveat",cursive;font-size:12px;color:var(--muted);margin-top:2px}
+
+  /* Atmosphere visuals — small versions for tiles */
+  /* AQUA — Greek balcony */
+  .art-aqua{background:linear-gradient(180deg,#0f4858 0%,#05202a 80%)}
+  .art-aqua .sun-aqua{position:absolute;width:50px;height:50px;border-radius:50%;background:radial-gradient(circle,rgba(255,200,140,.7),rgba(255,180,120,.3) 50%,transparent 80%);filter:blur(2px);top:40%;left:50%;transform:translate(-50%,-50%);animation:f-sun 7s ease-in-out infinite}
+  .art-aqua .water-line{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,200,160,.5),transparent);bottom:35%;animation:ripple-line 6s ease-in-out infinite}
+  .art-aqua .water-line.l2{bottom:25%;animation-delay:1.5s;opacity:.5}
+  .art-aqua .water-line.l3{bottom:15%;animation-delay:3s;opacity:.3}
+  @keyframes ripple-line{0%,100%{transform:scaleX(.8);opacity:.4}50%{transform:scaleX(1);opacity:.7}}
+
+  /* COZY — Cabin */
+  .art-cozy{background:radial-gradient(ellipse at 50% 80%,#5a2814,#0a0503 80%)}
+  .art-cozy .glow-c{position:absolute;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,rgba(255,180,100,.55),transparent 60%);filter:blur(12px);bottom:0;left:50%;transform:translateX(-50%);animation:glow-pulse 3s ease-in-out infinite}
+  @keyframes glow-pulse{0%,100%{opacity:.7}50%{opacity:1}}
+  .art-cozy .fire-c{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:55px;height:55px;background:radial-gradient(ellipse at 50% 80%,#ffd0a0 0%,#ff9050 30%,#c04a10 60%,transparent 80%);border-radius:50% 50% 30% 30%;animation:flame-c 2.5s ease-in-out infinite;filter:blur(1.5px)}
+  @keyframes flame-c{0%,100%{transform:translateX(-50%) scaleY(1)}50%{transform:translateX(-50%) scaleY(1.08) scaleX(.95)}}
+  .art-cozy .ember-c{position:absolute;bottom:20px;width:2px;height:2px;background:#ffd0a0;border-radius:50%;box-shadow:0 0 4px #ffb070;animation:ember-rise-c 5s ease-out infinite}
+  @keyframes ember-rise-c{0%{transform:translateY(0);opacity:0}10%{opacity:1}100%{transform:translateY(-90px);opacity:0}}
+
+  /* WILD — Forest at dawn */
+  .art-wild{background:linear-gradient(180deg,#1c3528 0%,#0f1a14 100%)}
+  .art-wild .sun-w{position:absolute;width:30px;height:30px;border-radius:50%;background:radial-gradient(circle,rgba(255,236,200,.95) 0%,rgba(255,200,140,.6) 30%,transparent 70%);filter:blur(2px);top:25%;left:50%;transform:translateX(-50%);animation:f-sun 7s ease-in-out infinite}
+  @keyframes f-sun{0%,100%{opacity:.85}50%{opacity:1}}
+  .art-wild .trees-mini{position:absolute;bottom:0;left:0;right:0;height:55%}
+  .art-wild .trees-mini svg{position:absolute;bottom:0;left:0;right:0;width:100%;height:100%;display:block}
+
+  /* WEATHER — Rain on tent */
+  .art-weather{background:linear-gradient(180deg,#1a2238,#0a0e1c 100%)}
+  .art-weather .stormcloud-w{position:absolute;top:10%;left:10%;right:10%;height:30px;background:radial-gradient(ellipse at 50% 50%,#5a6890,#2a3868);border-radius:50%;filter:blur(8px);opacity:.7}
+  .art-weather .rain-w{position:absolute;width:1px;background:linear-gradient(180deg,transparent,#a6b8e6);animation:t-rain 1s linear infinite;height:12px}
+  .art-weather .tent-w{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:80px;height:35px}
+  .art-weather .tent-w svg{width:100%;height:100%;display:block}
+  .art-weather .tent-glow{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:60px;height:25px;background:radial-gradient(ellipse at 50% 100%,rgba(255,180,100,.5),transparent 70%);filter:blur(6px);animation:glow-pulse 3s ease-in-out infinite}
+
+  /* GOAL pills */
+  .goals{display:flex;gap:8px;overflow-x:auto;margin:0 -22px;padding:0 22px 4px;scrollbar-width:none;position:relative;z-index:2}
+  .goals::-webkit-scrollbar{display:none}
+  .gpill{flex:0 0 auto;padding:10px 16px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:#fff;font-family:"Fraunces",serif;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:300}
+  .gpill .em{font-size:14px;opacity:.9}
+
+  /* ===================== EXPANDED PLAYER (NEW ORDER) ===================== */
+  .player-stage{position:absolute;inset:0;background:linear-gradient(180deg,#0c1a1f 0%,#2a3520 25%,#1a2820 45%,#0a0807 100%);overflow:hidden;display:flex;flex-direction:column}
+  /* SMALLER scene at top */
+  .pscene-small{position:relative;height:220px;overflow:hidden}
+  .pscene-small .sky-glow{position:absolute;top:0;left:0;right:0;height:80%;background:radial-gradient(ellipse at 50% 60%,rgba(232,200,150,.4) 0%,transparent 50%),radial-gradient(ellipse at 30% 40%,rgba(167,139,250,.2) 0%,transparent 60%)}
+  .pscene-small .sun{position:absolute;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 50% 50%,rgba(255,236,200,.95) 0%,rgba(255,200,140,.6) 20%,rgba(255,180,120,.3) 40%,transparent 70%);filter:blur(2px);top:45%;left:50%;transform:translate(-50%,-50%);animation:f-sun-p 8s ease-in-out infinite}
+  @keyframes f-sun-p{0%,100%{opacity:.85;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}}
+  .pscene-small .trees-p{position:absolute;bottom:0;left:0;right:0;height:80%}
+  .pscene-small .trees-p svg{position:absolute;bottom:0;left:0;right:0;width:100%;height:100%;display:block}
+  .pscene-small .blend{position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(180deg,transparent 0%,rgba(2,2,10,.5) 60%,#02020a 100%);z-index:5;pointer-events:none}
+
+  /* Top chrome */
+  .ptop{position:absolute;top:60px;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:0 22px;z-index:30}
+  .ptop .close{width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.3);backdrop-filter:blur(10px);display:grid;place-items:center;font-size:14px;cursor:pointer;border:1px solid rgba(255,255,255,.1);color:#fff}
+  .ptop .ctx{font-family:"Caveat",cursive;font-size:15px;color:rgba(255,255,255,.85);text-shadow:0 0 8px rgba(0,0,0,.5)}
+  .ptop .more{width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.3);backdrop-filter:blur(10px);display:grid;place-items:center;font-size:17px;cursor:pointer;border:1px solid rgba(255,255,255,.1);color:#fff}
+
+  /* Title block — between scene and sounds */
+  .ptitle{position:relative;text-align:center;padding:14px 22px 0;z-index:6}
+  .ptitle .title{font-family:"Inter",sans-serif;font-weight:600;font-size:24px;letter-spacing:-.01em;color:#fff;margin-bottom:6px}
+  .ptitle .sub{color:rgba(255,255,255,.55);font-size:12px;font-style:italic;font-family:"Fraunces",serif}
+
+  /* SOUNDS FIRST */
+  .pmix{padding:18px 22px 8px;position:relative;z-index:6}
+  .bar-row{position:relative;display:flex;align-items:center;gap:12px;padding:13px 16px;margin-bottom:7px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);overflow:hidden;cursor:pointer}
+  .bar-row .ic{font-size:15px;width:20px;text-align:center;flex:0 0 20px;opacity:.9;z-index:2;color:#fff}
+  .bar-row .nm{flex:1;font-size:14px;font-weight:500;z-index:2;color:#fff}
+  .bar-row .vfill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg, rgba(167,139,250,.32) 0%, rgba(167,139,250,.18) 100%);pointer-events:none;border-radius:14px;z-index:1}
+  .bar-row .knob{position:absolute;top:14%;bottom:14%;width:2.5px;background:var(--accent-bright);border-radius:2px;pointer-events:none;z-index:3;box-shadow:0 0 8px rgba(196,177,255,.5)}
+  .bar-row.b1 .vfill{width:62%} .bar-row.b1 .knob{left:62%}
+  .bar-row.b2 .vfill{width:42%} .bar-row.b2 .knob{left:42%}
+  .bar-row.b3 .vfill{width:78%} .bar-row.b3 .knob{left:78%}
+  .bar-row.b4 .vfill{width:30%} .bar-row.b4 .knob{left:30%}
+
+  .add-sound{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;margin-top:2px;border-radius:14px;border:1px dashed rgba(255,255,255,.18);font-family:"Caveat",cursive;font-size:14px;color:rgba(255,255,255,.55);cursor:pointer}
+
+  /* ACTION ROW BELOW SOUNDS */
+  .paction-row{
+    display:flex;justify-content:center;gap:14px;
+    margin-top:14px;
+    padding:0 22px;
+    position:relative;z-index:6;
+  }
+  .paction{
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:8px 12px;
+    cursor:pointer;
+    min-width:56px;
+    transition:all .2s;
+  }
+  .paction:hover{background:rgba(255,255,255,.08)}
+  .paction.on{background:rgba(167,139,250,.14);border-color:var(--accent)}
+  .paction .ic{font-size:13px;color:#fff}
+  .paction.on .ic{color:var(--accent-bright)}
+  .paction .lb{font-family:"Caveat",cursive;font-size:11px;color:var(--muted);line-height:1}
+  .paction.on .lb{color:var(--accent-bright)}
+
+  .pcontrols{position:absolute;bottom:32px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:28px;z-index:40}
+  .pc{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.08);display:grid;place-items:center;font-size:15px;color:#fff;cursor:pointer;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.06)}
+  .pc.big{width:68px;height:68px;background:rgba(255,255,255,.95);color:#0a0907;font-size:20px;box-shadow:0 16px 40px -10px rgba(255,255,255,.3);border:none}
+  .pc.heart{color:#ff7a90;font-size:16px}
+
+  /* ===================== REFLECTION BOTTOM SHEET ===================== */
+  .ref-stage{position:absolute;inset:0;background:linear-gradient(180deg,#0c1a1f 0%,#2a3520 25%,#1a2820 45%,#0a0807 100%);overflow:hidden}
+  .ref-stage .scene-shadow{position:absolute;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);z-index:10}
+  .ref-sheet{
+    position:absolute;
+    bottom:0;left:0;right:0;
+    background:linear-gradient(180deg,#0e0c14,#020208);
+    border-top:1px solid rgba(232,200,150,.18);
+    border-radius:26px 26px 0 0;
+    padding:14px 24px 32px;
+    z-index:20;
+    box-shadow:0 -30px 60px rgba(0,0,0,.6);
+  }
+  .ref-sheet .handle{width:42px;height:4px;background:rgba(255,255,255,.18);border-radius:2px;margin:0 auto 18px}
+  .ref-sheet .place-echo{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+  .ref-sheet .place-echo .sw{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#0c1a1f,#2a3520,#5a8a5a);position:relative;overflow:hidden;flex:0 0 32px}
+  .ref-sheet .place-echo .sw::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.2),transparent 60%)}
+  .ref-sheet .place-echo .info{flex:1;min-width:0}
+  .ref-sheet .place-echo .nm{font-family:"Fraunces",serif;font-size:14px;color:#fff;letter-spacing:-.005em}
+  .ref-sheet .place-echo .when{font-family:"Caveat",cursive;font-size:12px;color:var(--muted)}
+  .ref-sheet .place-echo .x{color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px}
+  .ref-sheet .eyebrow{font-family:"Caveat",cursive;font-size:16px;color:var(--gold);opacity:.85}
+  .ref-sheet .hd{font-family:"Fraunces",serif;font-weight:200;font-size:28px;letter-spacing:-.02em;line-height:1.05;margin-top:4px;color:#fff}
+  .ref-sheet .hd em{font-style:italic;color:var(--gold)}
+  .ref-sheet .sub{color:var(--muted);font-size:12px;margin-top:6px;font-family:"Fraunces",serif;font-style:italic}
+  .ref-words{margin-top:22px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .ref-word{position:relative;aspect-ratio:1/1;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);overflow:hidden;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px;text-align:center;transition:all .2s cubic-bezier(0.16,1,0.3,1)}
+  .ref-word.sel{background:rgba(167,139,250,.14);border-color:var(--accent);transform:scale(1.04)}
+  .ref-word::before{content:"";position:absolute;inset:-30%;background:radial-gradient(circle,var(--glow,#a78bfa) 0%,transparent 60%);opacity:0;filter:blur(20px);transition:opacity .3s;pointer-events:none}
+  .ref-word.sel::before{opacity:.35}
+  /* NEW glow colors for new words */
+  .w-gone{--glow:#c4b1ff}.w-drifting{--glow:#9bc4f3}.w-softer{--glow:#d8a8d0}.w-here{--glow:#ffc89a}.w-awake{--glow:#9be6f3}.w-restless{--glow:#a98b8b}
+  .ref-word .nm{font-family:"Fraunces",serif;font-weight:300;font-size:17px;letter-spacing:-.01em;color:#fff;position:relative;z-index:2}
+  .ref-word .ds{font-family:"Caveat",cursive;font-size:11px;color:var(--muted);margin-top:1px;opacity:.7;line-height:1.15;position:relative;z-index:2}
+  .ref-word.sel .nm{color:var(--accent-bright)}
+  .ref-word.sel .ds{color:var(--accent);opacity:.95}
+  .ref-actions{margin-top:20px;display:flex;flex-direction:column;gap:8px}
+  .ref-btn{height:50px;border-radius:999px;background:var(--accent);color:#0a0907;font-weight:600;font-size:14px;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+  .ref-skip{text-align:center;font-family:"Caveat",cursive;font-size:14px;color:var(--muted);cursor:pointer;padding:4px}
+  .auto-pill{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(167,139,250,.18);backdrop-filter:blur(12px);border:1px solid rgba(167,139,250,.4);padding:6px 12px;border-radius:999px;font-family:"Caveat",cursive;font-size:13px;color:var(--accent-bright);z-index:25;box-shadow:0 6px 16px rgba(167,139,250,.2)}
+
+  /* ===================== CREATE PAGE ===================== */
+  .create-stage{position:absolute;inset:0;background:var(--bg);padding:60px 22px 170px;overflow:auto}
+  .create-head{position:relative;z-index:2;padding:14px 4px 18px}
+  .create-head .h{font-family:"Fraunces",serif;font-weight:200;font-size:26px;letter-spacing:-.02em;color:#fff;line-height:1}
+  .create-head .h em{font-style:italic;color:var(--gold)}
+  .create-head .sub{font-family:"Caveat",cursive;font-size:14px;color:var(--gold);opacity:.85;margin-top:4px}
+  .mode-tabs{display:flex;gap:6px;margin-top:18px;background:rgba(255,255,255,.04);padding:4px;border-radius:14px;position:relative;z-index:2}
+  .mode-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 8px;border-radius:11px;font-size:13px;color:var(--muted);cursor:pointer;transition:all .2s}
+  .mode-tab .ic{font-size:13px}
+  .mode-tab.active{background:rgba(255,255,255,.07);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+
+  .write-content{position:relative;z-index:2;margin-top:22px}
+  .write-content .eyebrow{font-family:"Caveat",cursive;font-size:15px;color:var(--gold);opacity:.85}
+  .write-content .hd{font-family:"Fraunces",serif;font-weight:200;font-size:24px;letter-spacing:-.02em;line-height:1.1;margin-top:6px;color:#fff}
+  .write-content .hd em{font-style:italic;color:var(--gold)}
+  .write-content .lede{font-family:"Fraunces",serif;font-style:italic;font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .input-wrap{margin-top:18px;background:rgba(255,243,224,.05);border:1px solid rgba(232,200,150,.3);border-radius:18px;padding:16px;backdrop-filter:blur(10px)}
+  .input-wrap textarea{width:100%;border:0;outline:0;background:transparent;color:#fff;font-family:"Fraunces",serif;font-weight:300;font-size:16px;line-height:1.5;resize:none;min-height:70px}
+  .input-wrap textarea::placeholder{color:rgba(244,238,227,.4);font-style:italic}
+  .ideas-h{font-family:"Caveat",cursive;font-size:14px;color:var(--gold);opacity:.85;margin:18px 0 8px}
+  .ideas{display:flex;flex-wrap:wrap;gap:7px}
+  .idea{padding:8px 12px;border-radius:999px;background:rgba(255,243,224,.05);border:1px solid rgba(232,200,150,.18);color:#fff;font-size:11.5px;font-weight:500;cursor:pointer}
+
+  /* RECORD content — same "where do you want to be" framing */
+  .rec-content{position:relative;z-index:2;margin-top:22px}
+  .rec-content .eyebrow{font-family:"Caveat",cursive;font-size:15px;color:var(--gold);opacity:.85}
+  .rec-content .hd{font-family:"Fraunces",serif;font-weight:200;font-size:24px;letter-spacing:-.02em;line-height:1.1;margin-top:6px;color:#fff;text-align:center;padding:0 20px}
+  .rec-content .hd em{font-style:italic;color:var(--gold)}
+  .rec-content .sub{font-family:"Fraunces",serif;font-style:italic;font-size:12px;color:var(--muted);margin-top:10px;text-align:center;line-height:1.45}
+  .rec-button{margin:28px auto 0;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#ff7080,#a73a4a);box-shadow:0 0 0 8px rgba(167,139,250,.1),0 20px 40px -8px rgba(255,80,100,.4);display:grid;place-items:center;color:#fff;font-size:30px;cursor:pointer;animation:rec-pulse 2s ease-in-out infinite}
+  @keyframes rec-pulse{0%,100%{box-shadow:0 0 0 8px rgba(167,139,250,.1),0 20px 40px -8px rgba(255,80,100,.4)}50%{box-shadow:0 0 0 16px rgba(167,139,250,.05),0 20px 40px -8px rgba(255,80,100,.5)}}
+  .rec-hint{font-family:"Caveat",cursive;font-size:13px;color:var(--muted);margin-top:18px;text-align:center}
+  .rec-examples{margin-top:22px;display:flex;flex-direction:column;gap:6px}
+  .rec-example{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px}
+  .rec-example .ic{color:var(--accent);font-size:14px;width:18px}
+  .rec-example .tx{font-family:"Fraunces",serif;font-style:italic;font-size:13px;color:rgba(255,255,255,.7)}
+
+  /* LIBRARY content — REAL sound list */
+  .lib-content{position:relative;z-index:2;margin-top:18px}
+  .lib-category{font-family:"Caveat",cursive;font-size:14px;color:var(--gold);opacity:.85;margin:14px 0 8px}
+  .lib-row{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:12px;margin-bottom:6px;cursor:pointer;position:relative}
+  .lib-row .ic-l{font-size:16px;width:24px;text-align:center;flex:0 0 24px;opacity:.85;color:#fff}
+  .lib-row .meta-l{flex:1;min-width:0}
+  .lib-row .nm-l{font-size:14px;font-weight:500;color:#fff;line-height:1.1}
+  .lib-row .desc-l{font-family:"Caveat",cursive;font-size:12px;color:var(--muted);margin-top:1px}
+  .lib-row .add-l{width:30px;height:30px;border-radius:50%;background:rgba(167,139,250,.15);color:var(--accent-bright);display:grid;place-items:center;font-size:14px;cursor:pointer;border:1px solid rgba(167,139,250,.3)}
+  .lib-row.added .add-l{background:var(--accent);color:#0a0907}
+
+  /* ===================== YOU — NEXT UP (kept from old version) ===================== */
+  .you-stage-old{position:absolute;inset:0;background:var(--bg);padding:60px 22px 100px;overflow:auto}
+  .you-head-old{position:relative;z-index:2;padding:14px 4px 18px}
+  .you-head-old .h{font-family:"Fraunces",serif;font-weight:200;font-size:28px;letter-spacing:-.02em;color:#fff}
+  .account-row{display:flex;align-items:center;gap:12px;padding:14px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:16px;position:relative;z-index:2}
+  .account-row .avatar{width:48px;height:48px;border-radius:50%;background:radial-gradient(circle,#5a8fc0,#1a3a6a);display:grid;place-items:center;color:#fff;font-family:"Fraunces",serif;font-size:18px;letter-spacing:.04em}
+  .account-row .info{flex:1}
+  .account-row .nm{font-family:"Fraunces",serif;font-size:16px;color:#fff}
+  .account-row .plan{font-family:"Caveat",cursive;font-size:13px;color:var(--gold);margin-top:1px}
+  .account-row .chevron{color:var(--muted);font-size:14px}
+  .week-panel{margin-top:16px;padding:18px;border-radius:18px;background:linear-gradient(180deg,rgba(167,139,250,.06),rgba(232,200,150,.04));border:1px solid rgba(232,200,150,.2);position:relative;z-index:2;overflow:hidden}
+  .week-panel::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(232,200,150,.1),transparent 60%);pointer-events:none}
+  .week-panel .wh{font-family:"Caveat",cursive;font-size:14px;color:var(--gold);opacity:.85;position:relative;z-index:2}
+  .week-panel .wt{font-family:"Fraunces",serif;font-weight:300;font-size:24px;color:#fff;margin-top:4px;line-height:1.1;position:relative;z-index:2}
+  .week-panel .stats{display:flex;gap:16px;margin-top:14px;position:relative;z-index:2}
+  .week-panel .stat{flex:1}
+  .week-panel .stat .v{font-family:"Fraunces",serif;font-weight:300;font-size:22px;color:#fff;letter-spacing:-.01em}
+  .week-panel .stat .l{font-family:"Caveat",cursive;font-size:13px;color:var(--muted);margin-top:1px}
+  .week-panel .reflection-line{margin-top:14px;font-family:"Fraunces",serif;font-style:italic;font-size:13px;color:rgba(255,255,255,.85);line-height:1.45;position:relative;z-index:2}
+  .week-panel .reflection-line b{color:var(--gold-bright);font-weight:400}
+  .week-panel .share{margin-top:14px;padding:10px;border-radius:12px;background:rgba(232,200,150,.12);border:1px solid var(--gold);font-family:"Inter",sans-serif;font-size:13px;color:var(--gold-bright);font-weight:600;text-align:center;cursor:pointer;position:relative;z-index:2}
+</style>
+</head>
+<body>
+
+<h1>App updates · v2</h1>
+<p class="lede">Player flipped (sounds first, smaller scene, actions below) · New reflection words · Record reframed to "where do you want to be" · Library shows actual sounds · No You tab (settings wheel top-right) · Animated atmosphere assets on recently visited</p>
+
+<!-- ROW 1: HOME + PLAYER + REFLECTION -->
+<div class="row">
+
+  <!-- ========== HOME (no You tab, settings wheel, animated tiles) ========== -->
+  <div class="col">
+    <div class="label"><small>3 tabs + settings wheel</small>Home (today)</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="status">9:41</div>
+      <div class="status-r">●●● 96</div>
+
+      <!-- Settings wheel top-right -->
+      <div class="settings-wheel">⚙</div>
+
+      <div class="stage">
+        <div class="galaxy" id="g1"></div>
+
+        <div class="greet">
+          <div class="h">Good evening,<br/><span class="name">Roni.</span></div>
+          <div class="sub">Tuesday · 9:41 pm · light rain outside</div>
+        </div>
+
+        <div class="tonight">
+          <div class="rain-bg" id="rb"></div>
+          <div class="corner tl"></div><div class="corner tr"></div>
+          <div class="corner bl"></div><div class="corner br"></div>
+          <div class="top"><span>★ made for tonight</span><span>refreshed 6 pm</span></div>
+          <div class="body">
+            <div class="invite">the rain outside · your sleep place</div>
+            <div class="name">Rain on a tent</div>
+            <div class="why">It's raining outside. Your most-loved sleep place pairs well.</div>
+          </div>
+          <div class="go">▶</div>
+        </div>
+
+        <!-- RECENTLY VISITED with animated atmosphere assets -->
+        <div class="section-h"><div class="t">recently visited</div><div class="a">see all</div></div>
+        <div class="recent">
+          <div class="place-tile">
+            <div class="art art-aqua">
+              <div class="sun-aqua"></div>
+              <div class="water-line"></div>
+              <div class="water-line l2"></div>
+              <div class="water-line l3"></div>
+            </div>
+            <div class="nm">Greek island balcony</div>
+            <div class="feel">— softer · last night</div>
+          </div>
+          <div class="place-tile">
+            <div class="art art-cozy">
+              <div class="glow-c"></div>
+              <div class="fire-c"></div>
+              <div class="ember-c" style="left:46%;animation-delay:0s"></div>
+              <div class="ember-c" style="left:50%;animation-delay:1.5s"></div>
+              <div class="ember-c" style="left:54%;animation-delay:3s"></div>
+            </div>
+            <div class="nm">Cabin in a snowstorm</div>
+            <div class="feel">— gone · sun</div>
+          </div>
+          <div class="place-tile">
+            <div class="art art-wild">
+              <div class="sun-w"></div>
+              <div class="trees-mini">
+                <svg viewBox="0 0 128 70" preserveAspectRatio="none"><g fill="rgba(8,16,10,.9)">
+                  <polygon points="6,70 12,30 18,70"/><polygon points="22,70 30,18 38,70"/><polygon points="44,70 52,28 60,70"/><polygon points="64,70 72,16 80,70"/><polygon points="84,70 92,26 100,70"/><polygon points="104,70 112,20 120,70"/>
+                </g></svg>
+              </div>
+            </div>
+            <div class="nm">Forest at dawn</div>
+            <div class="feel">— here · mon</div>
+          </div>
+          <div class="place-tile">
+            <div class="art art-weather">
+              <div class="stormcloud-w"></div>
+              <div class="rain-w" style="left:14%;top:30%;animation-delay:0s"></div>
+              <div class="rain-w" style="left:30%;top:35%;animation-delay:.3s"></div>
+              <div class="rain-w" style="left:46%;top:25%;animation-delay:.6s"></div>
+              <div class="rain-w" style="left:62%;top:35%;animation-delay:.1s"></div>
+              <div class="rain-w" style="left:78%;top:30%;animation-delay:.5s"></div>
+              <div class="tent-glow"></div>
+              <div class="tent-w">
+                <svg viewBox="0 0 80 35" preserveAspectRatio="none">
+                  <path fill="#0a0e18" d="M0,35 L0,32 L40,8 L80,32 L80,35 Z"/>
+                </svg>
+              </div>
+            </div>
+            <div class="nm">Rain on a tent</div>
+            <div class="feel">— drifting · sat</div>
+          </div>
+        </div>
+
+        <div class="section-h"><div class="t">or by feeling</div><div class="a"></div></div>
+        <div class="goals">
+          <div class="gpill"><span class="em">🌙</span>fall asleep</div>
+          <div class="gpill"><span class="em">🎯</span>think deeply</div>
+          <div class="gpill"><span class="em">🌿</span>relax</div>
+          <div class="gpill"><span class="em">☀</span>feel alive</div>
+          <div class="gpill"><span class="em">🌅</span>let the day go</div>
+        </div>
+      </div>
+
+      <div class="miniplayer">
+        <div class="swatch"></div>
+        <div class="meta">
+          <div class="nm">Forest at dawn</div>
+          <div class="desc">— here · 18 min in</div>
+        </div>
+        <div class="controls">
+          <div class="equalizer"><span></span><span></span><span></span></div>
+          <div class="pc">❚❚</div>
+        </div>
+      </div>
+
+      <!-- 3 TABS (Home / Create / Sky) -->
+      <div class="tabbar">
+        <div class="tab active"><div class="ic">⌂</div>Home</div>
+        <div class="tab create"><div class="ic">✦</div>Create</div>
+        <div class="tab"><div class="ic">★</div>Sky</div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- ========== EXPANDED PLAYER (FLIPPED: small scene, sounds first, actions below) ========== -->
+  <div class="col">
+    <div class="label"><small>sounds first · smaller scene</small>Player</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="status">9:41</div>
+      <div class="status-r">●●● 96</div>
+      <div class="player-stage">
+        <!-- SMALLER scene -->
+        <div class="pscene-small">
+          <div class="sky-glow"></div>
+          <div class="sun"></div>
+          <div class="trees-p">
+            <svg viewBox="0 0 390 220" preserveAspectRatio="none">
+              <g fill="rgba(8,16,10,.9)">
+                <polygon points="10,220 22,90 34,220"/>
+                <polygon points="40,220 56,60 72,220"/>
+                <polygon points="78,220 92,100 106,220"/>
+                <polygon points="112,220 130,50 148,220"/>
+                <polygon points="156,220 172,85 188,220"/>
+                <polygon points="196,220 214,45 232,220"/>
+                <polygon points="240,220 256,80 272,220"/>
+                <polygon points="280,220 296,65 312,220"/>
+                <polygon points="318,220 336,90 354,220"/>
+                <polygon points="358,220 374,70 390,220"/>
+              </g>
+            </svg>
+          </div>
+          <div class="blend"></div>
+        </div>
+
+        <div class="ptop">
+          <div class="close">×</div>
+          <div class="ctx">visiting</div>
+          <div class="more">⋯</div>
+        </div>
+
+        <div class="ptitle">
+          <div class="title">Deep forest focus</div>
+          <div class="sub">Still air, distant water, leaves breathing around you</div>
+        </div>
+
+        <!-- SOUNDS FIRST -->
+        <div class="pmix">
+          <div class="bar-row b1"><div class="vfill"></div><div class="knob"></div><span class="ic">⌂</span><span class="nm">Forest ambience</span></div>
+          <div class="bar-row b2"><div class="vfill"></div><div class="knob"></div><span class="ic">≋</span><span class="nm">Waterfall</span></div>
+          <div class="bar-row b3"><div class="vfill"></div><div class="knob"></div><span class="ic">⌘</span><span class="nm">Leaves</span></div>
+          <div class="bar-row b4"><div class="vfill"></div><div class="knob"></div><span class="ic">♪</span><span class="nm">Birdsong</span></div>
+          <div class="add-sound">＋ add sound</div>
+        </div>
+
+        <!-- ACTIONS BELOW -->
+        <div class="paction-row">
+          <div class="paction"><div class="ic">⏱</div><div class="lb">timer</div></div>
+          <div class="paction"><div class="ic">◐</div><div class="lb">dim</div></div>
+          <div class="paction"><div class="ic">ⓘ</div><div class="lb">about</div></div>
+          <div class="paction"><div class="ic">✎</div><div class="lb">how is it</div></div>
+        </div>
+
+        <div class="pcontrols">
+          <div class="pc heart">♥</div>
+          <div class="pc big">❚❚</div>
+          <div class="pc">⤺</div>
+        </div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- ========== REFLECTION (new words) ========== -->
+  <div class="col">
+    <div class="label"><small>new words · liked the drawer</small>Reflection sheet</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="status">9:41</div>
+      <div class="status-r">●●● 96</div>
+      <div class="ref-stage">
+        <div class="pscene-small" style="height:380px">
+          <div class="sky-glow"></div>
+          <div class="sun"></div>
+          <div class="trees-p">
+            <svg viewBox="0 0 390 380" preserveAspectRatio="none"><g fill="rgba(8,16,10,.9)">
+              <polygon points="10,380 22,140 34,380"/><polygon points="40,380 56,100 72,380"/><polygon points="78,380 92,150 106,380"/><polygon points="112,380 130,80 148,380"/><polygon points="156,380 172,135 188,380"/><polygon points="196,380 214,75 232,380"/><polygon points="240,380 256,130 272,380"/><polygon points="280,380 296,105 312,380"/><polygon points="318,380 336,140 354,380"/><polygon points="358,380 374,120 390,380"/>
+            </g></svg>
+          </div>
+        </div>
+
+        <div class="auto-pill">10 minutes in · checking in</div>
+        <div class="scene-shadow"></div>
+
+        <div class="ref-sheet">
+          <div class="handle"></div>
+          <div class="place-echo">
+            <div class="sw"></div>
+            <div class="info">
+              <div class="nm">Deep forest focus</div>
+              <div class="when">10 min in · still playing</div>
+            </div>
+            <div class="x">×</div>
+          </div>
+          <div class="eyebrow">— a moment to land —</div>
+          <div class="hd">How is <em>this landing?</em></div>
+          <div class="sub">one word — it shapes what we suggest next</div>
+
+          <div class="ref-words">
+            <div class="ref-word w-gone sel"><div class="nm">gone</div><div class="ds">mentally elsewhere</div></div>
+            <div class="ref-word w-drifting"><div class="nm">drifting</div><div class="ds">sleepy, dreamy</div></div>
+            <div class="ref-word w-softer"><div class="nm">softer</div><div class="ds">decompressed</div></div>
+            <div class="ref-word w-here"><div class="nm">here</div><div class="ds">present, focused</div></div>
+            <div class="ref-word w-awake"><div class="nm">awake</div><div class="ds">alert, alive</div></div>
+            <div class="ref-word w-restless"><div class="nm">restless</div><div class="ds">not landing</div></div>
+          </div>
+
+          <div class="ref-actions">
+            <button class="ref-btn">Save · keep listening</button>
+            <div class="ref-skip">not now</div>
+          </div>
+        </div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ROW 2: Create — 3 modes -->
+<div class="row" style="margin-top:48px">
+
+  <!-- ========== CREATE — WRITE ========== -->
+  <div class="col">
+    <div class="label"><small>create · write (default)</small>Where do you want to be?</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="status">9:41</div>
+      <div class="status-r">●●● 96</div>
+      <div class="settings-wheel">⚙</div>
+      <div class="create-stage">
+        <div class="galaxy" id="g2"></div>
+        <div class="create-head">
+          <div class="h">Make a <em>place.</em></div>
+          <div class="sub">write it · record it · find it</div>
+        </div>
+        <div class="mode-tabs">
+          <div class="mode-tab active"><span class="ic">✎</span><span>Write</span></div>
+          <div class="mode-tab"><span class="ic">●</span><span>Record</span></div>
+          <div class="mode-tab"><span class="ic">★</span><span>Library</span></div>
+        </div>
+        <div class="write-content">
+          <div class="eyebrow">— in your words —</div>
+          <div class="hd">Where do you<br/>want to <em>be?</em></div>
+          <div class="lede">A place, real or imagined. The more specific, the better.</div>
+          <div class="input-wrap">
+            <textarea rows="3" placeholder="e.g. deep in a forest with a distant creek, soft wind through the trees…"></textarea>
+          </div>
+          <div class="ideas-h">or try one of these</div>
+          <div class="ideas">
+            <span class="idea">a rainy afternoon in a café</span>
+            <span class="idea">deep in a forest with a distant creek</span>
+            <span class="idea">a library on a grey morning</span>
+            <span class="idea">a snowy cabin at midnight</span>
+          </div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab"><div class="ic">⌂</div>Home</div>
+        <div class="tab create active"><div class="ic">✦</div>Create</div>
+        <div class="tab"><div class="ic">★</div>Sky</div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- ========== CREATE — RECORD (same framing) ========== -->
+  <div class="col">
+    <div class="label"><small>create · record</small>Where do you want to be?</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="status">9:41</div>
+      <div class="status-r">●●● 96</div>
+      <div class="settings-wheel">⚙</div>
+      <div class="create-stage">
+        <div class="galaxy" id="g3"></div>
+        <div class="create-head">
+          <div class="h">Make a <em>place.</em></div>
+          <div class="sub">write it · record it · find it</div>
+        </div>
+        <div class="mode-tabs">
+          <div class="mode-tab"><span class="ic">✎</span><span>Write</span></div>
+          <div class="mode-tab active"><span class="ic">●</span><span>Record</span></div>
+          <div class="mode-tab"><span class="ic">★</span><span>Library</span></div>
+        </div>
+        <div class="rec-content">
+          <div class="eyebrow" style="text-align:center">— record where —</div>
+          <div class="hd">Where do you<br/>want to <em>be?</em></div>
+          <div class="sub">Record 5–30 seconds of a place.<br/>We'll listen and bring it back to you.</div>
+          <div class="rec-button">●</div>
+          <div class="rec-hint">tap to start recording</div>
+          <div class="rec-examples">
+            <div class="rec-example"><div class="ic">★</div><div class="tx">somewhere you visited</div></div>
+            <div class="rec-example"><div class="ic">★</div><div class="tx">where you'd rather be</div></div>
+            <div class="rec-example"><div class="ic">★</div><div class="tx">a memory you want to keep</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab"><div class="ic">⌂</div>Home</div>
+        <div class="tab create active"><div class="ic">✦</div>Create</div>
+        <div class="tab"><div class="ic">★</div>Sky</div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- ========== CREATE — LIBRARY (real sound list) ========== -->
+  <div class="col">
+    <div class="label"><small>create · library</small>All the sounds</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="status">9:41</div>
+      <div class="status-r">●●● 96</div>
+      <div class="settings-wheel">⚙</div>
+      <div class="create-stage">
+        <div class="galaxy" id="g4"></div>
+        <div class="create-head">
+          <div class="h">Make a <em>place.</em></div>
+          <div class="sub">write it · record it · find it</div>
+        </div>
+        <div class="mode-tabs">
+          <div class="mode-tab"><span class="ic">✎</span><span>Write</span></div>
+          <div class="mode-tab"><span class="ic">●</span><span>Record</span></div>
+          <div class="mode-tab active"><span class="ic">★</span><span>Library</span></div>
+        </div>
+        <div class="lib-content">
+          <div class="lib-category">— nature —</div>
+          <div class="lib-row added"><span class="ic-l">☂</span><div class="meta-l"><div class="nm-l">Soft rain</div><div class="desc-l">light, steady</div></div><div class="add-l">✓</div></div>
+          <div class="lib-row"><span class="ic-l">⚡</span><div class="meta-l"><div class="nm-l">Distant thunder</div><div class="desc-l">soft rumble</div></div><div class="add-l">+</div></div>
+          <div class="lib-row added"><span class="ic-l">🌬</span><div class="meta-l"><div class="nm-l">Wind</div><div class="desc-l">through trees</div></div><div class="add-l">✓</div></div>
+          <div class="lib-row"><span class="ic-l">🌊</span><div class="meta-l"><div class="nm-l">Ocean waves</div><div class="desc-l">distant, slow</div></div><div class="add-l">+</div></div>
+          <div class="lib-row"><span class="ic-l">🐦</span><div class="meta-l"><div class="nm-l">Forest birds</div><div class="desc-l">early morning</div></div><div class="add-l">+</div></div>
+
+          <div class="lib-category">— indoor —</div>
+          <div class="lib-row"><span class="ic-l">🔥</span><div class="meta-l"><div class="nm-l">Fireplace</div><div class="desc-l">crackling, warm</div></div><div class="add-l">+</div></div>
+          <div class="lib-row"><span class="ic-l">☕</span><div class="meta-l"><div class="nm-l">Café chatter</div><div class="desc-l">distant, muffled</div></div><div class="add-l">+</div></div>
+
+          <div class="lib-category">— tonal —</div>
+          <div class="lib-row"><span class="ic-l">▤</span><div class="meta-l"><div class="nm-l">Brown noise</div><div class="desc-l">deep, masking</div></div><div class="add-l">+</div></div>
+          <div class="lib-row"><span class="ic-l">◌</span><div class="meta-l"><div class="nm-l">Pink noise</div><div class="desc-l">soft, balanced</div></div><div class="add-l">+</div></div>
+        </div>
+      </div>
+      <div class="tabbar">
+        <div class="tab"><div class="ic">⌂</div>Home</div>
+        <div class="tab create active"><div class="ic">✦</div>Create</div>
+        <div class="tab"><div class="ic">★</div>Sky</div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========== NEXT UP — You section ========== -->
+<div class="section-label"><small>next up · not in current version</small>holding for later</div>
+
+<div class="row">
+
+  <div class="col">
+    <div class="next-tag">Next up</div>
+    <div class="label"><small>account + insights</small>You</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="status">9:41</div>
+      <div class="status-r">●●● 96</div>
+      <div class="you-stage-old">
+        <div class="galaxy" id="g5"></div>
+        <div class="you-head-old">
+          <div class="h">You</div>
+        </div>
+        <div class="account-row">
+          <div class="avatar">R</div>
+          <div class="info">
+            <div class="nm">Roni</div>
+            <div class="plan">Traveler · Annual</div>
+          </div>
+          <div class="chevron">›</div>
+        </div>
+        <div class="week-panel">
+          <div class="wh">— this week —</div>
+          <div class="wt">8h 22m<br/>across 12 trips.</div>
+          <div class="stats">
+            <div class="stat">
+              <div class="v">5 stars</div>
+              <div class="l">added to sky</div>
+            </div>
+            <div class="stat">
+              <div class="v">↑ 21%</div>
+              <div class="l">better sleep</div>
+            </div>
+          </div>
+          <div class="reflection-line">
+            You came back <b>gone</b> 4 times, <b>softer</b> 2 times, <b>here</b> once.
+            <br/>Cabin in a snowstorm takes you furthest.
+          </div>
+          <div class="share">Share Soundprint</div>
+        </div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function makeStars(id, n){
+    const el = document.getElementById(id);
+    if (!el) return;
+    for (let i=0;i<n;i++){
+      const cls = ["s1","s2","s3"][Math.floor(Math.random()*3)];
+      const s = document.createElement("span");
+      s.className = "star "+cls;
+      s.style.top = (Math.random()*100)+"%";
+      s.style.left = (Math.random()*100)+"%";
+      s.style.animationDelay = (Math.random()*5)+"s";
+      el.appendChild(s);
+    }
+  }
+  makeStars("g1", 40); makeStars("g2", 40); makeStars("g3", 40); makeStars("g4", 40); makeStars("g5", 30);
+
+  (function(){
+    const el = document.getElementById("rb");
+    if (!el) return;
+    for (let i=0;i<20;i++){
+      const r = document.createElement("div");
+      r.className = "raindrop";
+      r.style.left = (Math.random()*100)+"%";
+      r.style.animationDelay = (Math.random()*1.2)+"s";
+      r.style.animationDuration = (.8+Math.random()*.6)+"s";
+      el.appendChild(r);
+    }
+  })();
+</script>
+
+</body>
+</html>
