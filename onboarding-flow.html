@@ -542,7 +542,7 @@
   .s-player{padding:0;display:block}
   .player-scene{
     position:absolute;inset:0 0 auto 0;
-    height:54%;
+    height:36%;
     overflow:hidden;
     background:linear-gradient(180deg, #1a0f1a 0%, #2a1a18 30%, #3a2a18 55%, #1a1410 85%);
   }
@@ -667,20 +667,30 @@
 
   .player-body{
     position:absolute;
-    top:54%;left:0;right:0;bottom:0;
-    padding:16px 28px 50px;
+    top:36%;left:0;right:0;bottom:0;
+    padding:16px 24px 36px;
     display:flex;flex-direction:column;
     z-index:20;
   }
+  .add-sound{
+    margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;
+    padding:12px;border-radius:14px;
+    background:rgba(255,255,255,.03);
+    border:1px dashed rgba(255,255,255,.12);
+    color:rgba(255,255,255,.55);
+    font-family:"Inter",sans-serif;font-size:13px;font-weight:500;
+    cursor:pointer;
+  }
+  .add-sound .plus{font-size:16px;line-height:1;opacity:.7}
   .player-body::before{
     content:"";position:absolute;inset:0;
     background:radial-gradient(ellipse at 50% 0%, rgba(167,139,250,.05), transparent 60%);
     pointer-events:none;
   }
-  .player-title{text-align:center;padding:10px 0 22px;position:relative;z-index:2}
-  .player-title .pt-eye{font-family:"Caveat",cursive;font-weight:500;font-size:15px;color:rgba(255,236,200,.85);letter-spacing:.01em}
-  .player-title .pt-h{font-family:"Geist",sans-serif;font-weight:700;font-size:28px;letter-spacing:-.022em;color:#fff;margin-top:6px}
-  .player-title .pt-sub{font-family:"Fraunces",serif;font-style:italic;font-weight:300;font-size:14px;color:rgba(255,255,255,.65);margin-top:8px;line-height:1.5;letter-spacing:.003em}
+  .player-title{text-align:left;padding:6px 4px 14px;position:relative;z-index:2}
+  .player-title .pt-eye{display:none}
+  .player-title .pt-h{font-family:"Geist",sans-serif;font-weight:700;font-size:24px;letter-spacing:-.022em;color:#fff}
+  .player-title .pt-sub{font-family:"Inter",sans-serif;font-style:normal;font-weight:400;font-size:13.5px;color:rgba(255,255,255,.55);margin-top:6px;line-height:1.45;letter-spacing:0}
 
   .mix-list{display:flex;flex-direction:column;gap:10px;position:relative;z-index:2;margin-top:4px}
   .mix-row{
@@ -1289,13 +1299,11 @@
             <span class="nm">Birdsong</span>
             <span class="pct">30</span>
           </div>
+          <div class="add-sound"><span class="plus">+</span> Add sound</div>
         </div>
 
         <div class="player-cta">
-          <button class="btn" data-action="next">
-            Save this place
-            <span style="font-family:'Caveat',cursive;font-size:14px;opacity:.7;margin-left:4px">★</span>
-          </button>
+          <button class="btn" data-action="next">Save this place</button>
         </div>
       </div>
     </section>
@@ -1322,7 +1330,7 @@
       <!-- Emotional headline -->
       <div class="pw-head">
         <h2 class="pw-headline">A new <span class="accent">star</span> in your sky.</h2>
-        <p class="pw-sub">Keep this place — and every place you describe — forever.</p>
+        <p class="pw-sub">Keep this place — and every place you describe.</p>
       </div>
 
       <!-- Pricing: primary mechanic -->
@@ -1349,9 +1357,8 @@
 
       <!-- CTA only — no skip -->
       <div class="pw-actions">
-        <button class="btn gold" data-action="next">
-          <span class="line1">Start 7-day free trial</span>
-          <span class="line2">save <em id="ctaName">Deep forest focus</em></span>
+        <button class="btn" data-action="next">
+          Start 7-day free trial
         </button>
         <div class="pw-trust">
           <span>Cancel anytime</span>
