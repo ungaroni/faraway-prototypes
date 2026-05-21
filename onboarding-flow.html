@@ -1727,14 +1727,43 @@
 
   onEnter(0);
 
-  // Capture helper: ?s=N activates screen N (1-indexed) for Figma capture
+  // Capture helper: ?s=N activates screen N (1-indexed) for Figma capture.
+  // Also kills any queued auto-advance and inert-locks all other screens so
+  // nothing can take over after the capture script's delay.
   try {
     const m = location.search.match(/[?&]s=(\d+)/);
     if (m) {
       const idx = Math.max(0, Math.min(8, parseInt(m[1],10) - 1));
+      // Stop the splash/auto-advance chain
+      clearTimeout(autoTimer);
+      autoTimer = null;
+      // Monkey-patch setTimeout to no-op anything that tries to advance us
+      const _setTimeout = window.setTimeout;
+      window.setTimeout = function(fn, t){
+        // allow short timers (animations) but block scene transitions (>=1000ms)
+        if (typeof fn === 'function' && t >= 800) return 0;
+        return _setTimeout.apply(window, arguments);
+      };
+      // Apply active state
       document.querySelectorAll('.screen').forEach((el,i) => {
-        el.classList.toggle('active', i === idx);
+        const isActive = i === idx;
+        el.classList.toggle('active', isActive);
+        // Hard-hide non-active screens so nothing peeks through stacking
+        if (!isActive) {
+          el.style.opacity = '0';
+          el.style.visibility = 'hidden';
+          el.style.pointerEvents = 'none';
+        } else {
+          el.style.opacity = '';
+          el.style.visibility = '';
+          el.style.pointerEvents = '';
+        }
       });
+      // Hide the doc header so the capture frame is just the phone
+      const docH = document.querySelector('.doc-h1'); if (docH) docH.style.display = 'none';
+      const docL = document.querySelector('.doc-lede'); if (docL) docL.style.display = 'none';
+      const nav  = document.querySelector('.nav');     if (nav)  nav.style.display = 'none';
+      const kh   = document.querySelector('.keyboard-hint'); if (kh) kh.style.display = 'none';
     }
   } catch(e){}
 })();
