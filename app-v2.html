@@ -373,7 +373,42 @@
   .week-panel .reflection-line{margin-top:14px;font-family:"Fraunces",serif;font-style:italic;font-size:13px;color:rgba(255,255,255,.85);line-height:1.45;position:relative;z-index:2}
   .week-panel .reflection-line b{color:var(--gold-bright);font-weight:400}
   .week-panel .share{margin-top:14px;padding:10px;border-radius:12px;background:rgba(232,200,150,.12);border:1px solid var(--gold);font-family:"Inter",sans-serif;font-size:13px;color:var(--gold-bright);font-weight:600;text-align:center;cursor:pointer;position:relative;z-index:2}
+
+  /* ============ SKY TAB · constellation of saved places ============ */
+  .sky-stage{position:absolute;inset:0;overflow:hidden;display:flex;flex-direction:column}
+  .sky-stage .galaxy{position:absolute;inset:0;z-index:0}
+  .sky-head{padding:64px 24px 8px;position:relative;z-index:3}
+  .sky-head .h{font-family:"Fraunces",serif;font-weight:300;font-size:36px;color:#fff;letter-spacing:-.02em;line-height:1}
+  .sky-head .meta{font-family:"Inter",sans-serif;font-size:12px;color:rgba(255,255,255,.5);margin-top:8px;letter-spacing:.02em}
+  .sky-head .more{position:absolute;top:64px;right:24px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.7);font-size:18px}
+  .sky-canvas{position:relative;height:360px;margin-top:14px;cursor:grab;z-index:2;perspective:900px}
+  .sky-canvas:active{cursor:grabbing}
+  .sky-world{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .25s cubic-bezier(.16,1,.3,1);will-change:transform}
+  .sky-canvas .cglow{position:absolute;width:360px;height:360px;left:50%;top:-10px;transform:translateX(-50%);background:radial-gradient(circle,rgba(230,200,140,.22) 0%,transparent 60%);filter:blur(30px);pointer-events:none}
+  .sky-node{position:absolute;transform:translate(-50%,-50%);text-align:center;pointer-events:auto}
+  .sky-node .core{width:10px;height:10px;border-radius:50%;background:#fff1c8;box-shadow:0 0 12px rgba(232,200,140,.9),0 0 22px rgba(232,200,140,.4);margin:0 auto;position:relative}
+  .sky-node .halo{position:absolute;top:50%;left:50%;width:36px;height:36px;border-radius:50%;background:radial-gradient(circle,rgba(232,200,140,.35),transparent 65%);transform:translate(-50%,-50%);filter:blur(4px);pointer-events:none}
+  .sky-node .tag{font-family:"Inter",sans-serif;font-size:9px;color:rgba(245,238,225,.55);letter-spacing:.06em;margin-top:8px;white-space:nowrap;text-transform:lowercase}
+  .sky-node.selected .core{width:14px;height:14px;background:#fff5d6;box-shadow:0 0 18px rgba(232,200,140,1),0 0 36px rgba(232,200,140,.55)}
+  .sky-node.selected .halo{width:60px;height:60px;background:radial-gradient(circle,rgba(232,200,140,.55),transparent 65%)}
+  .sky-node.selected .tag{color:#fff5d6;font-weight:600;font-size:10.5px;background:rgba(232,200,140,.18);border:1px solid rgba(232,200,140,.45);border-radius:999px;padding:3px 10px;margin-top:10px;display:inline-block;letter-spacing:.04em;text-transform:lowercase}
+  .sky-node.selected::after{content:"";position:absolute;top:50%;left:50%;width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,235,180,.55);transform:translate(-50%,-50%)}
+  .sky-edge{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none}
+  .sky-edge line{stroke:rgba(232,200,140,.2);stroke-width:.6}
+  .sky-far{position:absolute;width:1px;height:1px;background:#fff;border-radius:50%;opacity:.45}
+  .sky-far.bright{width:2px;height:2px;opacity:.85;box-shadow:0 0 4px rgba(255,255,255,.7)}
+  .sky-mid{position:absolute;width:1.5px;height:1.5px;background:#fff;border-radius:50%;opacity:.65}
+  .sky-hint{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);padding:6px 14px;border-radius:999px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);font-family:"Inter",sans-serif;font-size:10.5px;color:rgba(255,255,255,.75);letter-spacing:.04em;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:5}
+  .sky-recent{margin:28px 24px 12px;position:relative;z-index:3}
+  .sky-recent .lh{font-family:"Inter",sans-serif;font-size:11px;color:rgba(255,255,255,.5);letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px}
+  .sky-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:14px;background:rgba(255,255,255,.04);margin-bottom:8px}
+  .sky-row .dot{width:8px;height:8px;border-radius:50%;background:#fbd28a;box-shadow:0 0 6px rgba(232,200,140,.7);flex-shrink:0}
+  .sky-row .info{flex:1;min-width:0}
+  .sky-row .nm{font-family:"Inter",sans-serif;font-weight:500;font-size:13.5px;color:#fff}
+  .sky-row .at{font-family:"Inter",sans-serif;font-size:11px;color:rgba(255,255,255,.5);margin-top:1px}
+  .sky-row .play{color:rgba(255,255,255,.5);font-size:12px}
 </style>
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
 </head>
 <body>
 
@@ -905,6 +940,81 @@
 
 </div>
 
+<!-- ========== SKY TAB · constellation of saved places ========== -->
+<div class="section-label"><small>★ Sky tab</small>your saved places as a personal constellation</div>
+
+<div class="row">
+
+  <div class="col">
+    <div class="label"><small>tap stars to play · drag to explore in 3D</small>Sky</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="status">9:41</div>
+      <div class="status-r">●●● 96</div>
+      <div class="sky-stage">
+        <div class="galaxy" id="g-sky"></div>
+        <div class="sky-head">
+          <div class="h">Sky</div>
+          <div class="meta">8 places · 4.2 hrs this week</div>
+          <div class="more">⋯</div>
+        </div>
+        <div class="sky-canvas" id="skyCanvas">
+          <div class="sky-world" id="skyWorld">
+            <div class="cglow"></div>
+            <svg class="sky-edge" viewBox="0 0 390 360" preserveAspectRatio="none">
+              <line x1="95" y1="60" x2="175" y2="120"/>
+              <line x1="175" y1="120" x2="270" y2="80"/>
+              <line x1="270" y1="80" x2="320" y2="180"/>
+              <line x1="320" y1="180" x2="230" y2="240"/>
+              <line x1="230" y1="240" x2="130" y2="260"/>
+              <line x1="130" y1="260" x2="60" y2="195"/>
+              <line x1="60" y1="195" x2="95" y2="60"/>
+              <line x1="230" y1="240" x2="180" y2="320"/>
+              <line x1="175" y1="120" x2="230" y2="240"/>
+              <line x1="320" y1="180" x2="460" y2="110"/>
+              <line x1="460" y1="110" x2="510" y2="220"/>
+              <line x1="510" y1="220" x2="430" y2="290"/>
+              <line x1="60" y1="195" x2="-40" y2="150"/>
+              <line x1="-40" y1="150" x2="-20" y2="280"/>
+            </svg>
+            <!-- visible stars -->
+            <div class="sky-node" style="left:95px;top:60px"><div class="halo"></div><div class="core"></div><div class="tag">deep forest focus</div></div>
+            <div class="sky-node selected" style="left:175px;top:120px"><div class="halo"></div><div class="core"></div><div class="tag">rain on a tent</div></div>
+            <div class="sky-node" style="left:270px;top:80px"><div class="halo"></div><div class="core"></div><div class="tag">sea at 3am</div></div>
+            <div class="sky-node" style="left:320px;top:180px"><div class="halo"></div><div class="core"></div><div class="tag">coffee in kyoto</div></div>
+            <div class="sky-node" style="left:230px;top:240px"><div class="halo"></div><div class="core"></div><div class="tag">wind through pine</div></div>
+            <div class="sky-node" style="left:130px;top:260px"><div class="halo"></div><div class="core"></div><div class="tag">library midnight</div></div>
+            <div class="sky-node" style="left:60px;top:195px"><div class="halo"></div><div class="core"></div><div class="tag">snow falling</div></div>
+            <div class="sky-node" style="left:180px;top:320px"><div class="halo"></div><div class="core"></div><div class="tag">tide pool</div></div>
+            <!-- off-screen right (revealed when dragging right) -->
+            <div class="sky-node" style="left:460px;top:110px"><div class="halo"></div><div class="core"></div><div class="tag">desert wind</div></div>
+            <div class="sky-node" style="left:510px;top:220px"><div class="halo"></div><div class="core"></div><div class="tag">thunder far away</div></div>
+            <div class="sky-node" style="left:430px;top:290px"><div class="halo"></div><div class="core"></div><div class="tag">cathedral hum</div></div>
+            <!-- off-screen left -->
+            <div class="sky-node" style="left:-40px;top:150px"><div class="halo"></div><div class="core"></div><div class="tag">cabin fire</div></div>
+            <div class="sky-node" style="left:-20px;top:280px"><div class="halo"></div><div class="core"></div><div class="tag">first light</div></div>
+          </div>
+          <div class="sky-hint">⇠ drag to explore your sky ⇢</div>
+        </div>
+        <div class="sky-recent">
+          <div class="lh">Recent</div>
+          <div class="sky-row"><div class="dot"></div><div class="info"><div class="nm">Rain on a tent</div><div class="at">weather · last night · 38m</div></div><div class="play">▶</div></div>
+          <div class="sky-row"><div class="dot"></div><div class="info"><div class="nm">Deep forest focus</div><div class="at">wild · today · 1h 12m</div></div><div class="play">▶</div></div>
+          <div class="sky-row"><div class="dot"></div><div class="info"><div class="nm">Sea at 3am</div><div class="at">aqua · yesterday · 42m</div></div><div class="play">▶</div></div>
+        </div>
+      </div>
+      <!-- Tab bar -->
+      <div class="tabbar">
+        <div class="tab"><div class="ic">◐</div>Home</div>
+        <div class="tab"><div class="ic gold">✦</div>Create</div>
+        <div class="tab active"><div class="ic">★</div>Sky</div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+</div>
+
 <script>
   function makeStars(id, n){
     const el = document.getElementById(id);
@@ -919,7 +1029,79 @@
       el.appendChild(s);
     }
   }
-  makeStars("g1", 40); makeStars("g2", 40); makeStars("g3", 40); makeStars("g4", 40); makeStars("g5", 30);
+  makeStars("g1", 40); makeStars("g2", 40); makeStars("g3", 40); makeStars("g4", 40); makeStars("g5", 30); makeStars("g-sky", 50);
+
+  /* ============ SKY · depth dust + 3D drag-to-explore ============ */
+  (function(){
+    const world = document.getElementById('skyWorld');
+    const canvas = document.getElementById('skyCanvas');
+    if (!world || !canvas) return;
+
+    // Three depth layers of background dust inside the world
+    function rand(s){ const x = Math.sin(s)*10000; return x - Math.floor(x); }
+    for (let i = 0; i < 50; i++){
+      const d = document.createElement('span');
+      d.className = i % 7 === 0 ? 'sky-far bright' : 'sky-far';
+      d.style.left = (rand(i*3.1) * 600 - 100) + 'px';
+      d.style.top  = (rand(i*7.7) * 360) + 'px';
+      d.dataset.depth = 'far';
+      world.appendChild(d);
+    }
+    for (let i = 0; i < 30; i++){
+      const d = document.createElement('span');
+      d.className = 'sky-mid';
+      d.style.left = (rand(i*5.3) * 600 - 100) + 'px';
+      d.style.top  = (rand(i*9.1) * 360) + 'px';
+      d.dataset.depth = 'mid';
+      world.appendChild(d);
+    }
+
+    // Drag-to-pan with 3D tilt
+    let panX = 0, panY = 0;
+    let dragging = false, startX = 0, startY = 0, startPanX = 0, startPanY = 0;
+    const maxX = 140, maxY = 40;
+    function apply(){
+      const tiltY = -panX * 0.04;
+      const tiltX =  panY * 0.04;
+      world.style.transform = `translate3d(${-panX}px, ${-panY}px, 0) rotateY(${tiltY}deg) rotateX(${tiltX}deg)`;
+    }
+    function onDown(e){
+      dragging = true;
+      const t = e.touches ? e.touches[0] : e;
+      startX = t.clientX; startY = t.clientY;
+      startPanX = panX; startPanY = panY;
+      world.style.transition = 'none';
+    }
+    function onMove(e){
+      if (!dragging) return;
+      const t = e.touches ? e.touches[0] : e;
+      const dx = t.clientX - startX;
+      const dy = t.clientY - startY;
+      panX = Math.max(-maxX, Math.min(maxX, startPanX - dx));
+      panY = Math.max(-maxY, Math.min(maxY, startPanY - dy));
+      apply();
+    }
+    function onUp(){
+      dragging = false;
+      world.style.transition = 'transform .6s cubic-bezier(.16,1,.3,1)';
+    }
+    canvas.addEventListener('mousedown', onDown);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    canvas.addEventListener('touchstart', onDown, { passive: true });
+    window.addEventListener('touchmove', onMove, { passive: true });
+    window.addEventListener('touchend', onUp);
+
+    // Subtle ambient drift when idle, so it feels alive
+    let idleT = 0;
+    setInterval(() => {
+      if (dragging) return;
+      idleT += 0.02;
+      panX = Math.sin(idleT) * 8;
+      panY = Math.cos(idleT * 0.7) * 4;
+      apply();
+    }, 50);
+  })();
 
   (function(){
     const el = document.getElementById("rb");
