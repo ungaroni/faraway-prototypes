@@ -155,8 +155,9 @@
   .gpill{flex:0 0 auto;padding:10px 16px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--line);color:#fff;font-family:"Fraunces",serif;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:300}
   .gpill .em{font-size:14px;opacity:.9}
 
-  /* ===================== EXPANDED PLAYER (NEW ORDER) ===================== */
-  .player-stage{position:absolute;inset:0;background:linear-gradient(180deg,#0c1a1f 0%,#2a3520 25%,#1a2820 45%,#0a0807 100%);overflow:hidden;display:flex;flex-direction:column}
+  /* ===================== EXPANDED PLAYER (NEW ORDER + SCROLLABLE) ===================== */
+  .player-stage{position:absolute;inset:0;background:linear-gradient(180deg,#0c1a1f 0%,#2a3520 20%,#1a2820 35%,#0a0807 60%,#02020a 100%);overflow:auto}
+  .player-stage::-webkit-scrollbar{display:none}
   /* SMALLER scene at top */
   .pscene-small{position:relative;height:220px;overflow:hidden}
   .pscene-small .sky-glow{position:absolute;top:0;left:0;right:0;height:80%;background:radial-gradient(ellipse at 50% 60%,rgba(232,200,150,.4) 0%,transparent 50%),radial-gradient(ellipse at 30% 40%,rgba(167,139,250,.2) 0%,transparent 60%)}
@@ -191,34 +192,76 @@
 
   .add-sound{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;margin-top:2px;border-radius:14px;border:1px dashed rgba(255,255,255,.18);font-family:"Caveat",cursive;font-size:14px;color:rgba(255,255,255,.55);cursor:pointer}
 
-  /* ACTION ROW BELOW SOUNDS */
-  .paction-row{
-    display:flex;justify-content:center;gap:14px;
-    margin-top:14px;
-    padding:0 22px;
-    position:relative;z-index:6;
-  }
-  .paction{
-    display:flex;flex-direction:column;align-items:center;gap:4px;
-    background:rgba(255,255,255,.04);
-    border:1px solid var(--line);
-    border-radius:12px;
-    padding:8px 12px;
-    cursor:pointer;
-    min-width:56px;
-    transition:all .2s;
-  }
-  .paction:hover{background:rgba(255,255,255,.08)}
-  .paction.on{background:rgba(167,139,250,.14);border-color:var(--accent)}
-  .paction .ic{font-size:13px;color:#fff}
-  .paction.on .ic{color:var(--accent-bright)}
-  .paction .lb{font-family:"Caveat",cursive;font-size:11px;color:var(--muted);line-height:1}
-  .paction.on .lb{color:var(--accent-bright)}
+  /* PRETTY PILLS (Endel-inspired, Faraway-warm) */
+  .pill-row{display:flex;justify-content:center;gap:8px;margin-top:18px;padding:0 18px;position:relative;z-index:6}
+  .pill{display:flex;align-items:center;gap:7px;padding:11px 16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:999px;color:#fff;font-family:"Inter",sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s cubic-bezier(0.16,1,0.3,1);backdrop-filter:blur(8px)}
+  .pill:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.18)}
+  .pill.on{background:rgba(167,139,250,.16);border-color:rgba(167,139,250,.5);color:var(--accent-bright);box-shadow:0 0 24px -8px rgba(167,139,250,.4)}
+  .pill .ic{font-size:14px;line-height:1;opacity:.9}
+  .pill.on .ic{opacity:1}
+  .pill .v{font-family:"Caveat",cursive;font-size:14px;color:var(--accent-bright);margin-left:2px}
+  .ic-svg{width:14px;height:14px;display:block}
 
-  .pcontrols{position:absolute;bottom:32px;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:28px;z-index:40}
-  .pc{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.08);display:grid;place-items:center;font-size:15px;color:#fff;cursor:pointer;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.06)}
+  /* Primary controls — non-fixed, scrollable */
+  .pcontrols{display:flex;justify-content:center;align-items:center;gap:24px;margin-top:22px;padding:0 22px;position:relative;z-index:6}
+  .pc{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.05);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08);display:grid;place-items:center;color:#fff;font-size:15px;cursor:pointer;transition:all .2s}
+  .pc:hover{background:rgba(255,255,255,.1)}
   .pc.big{width:68px;height:68px;background:rgba(255,255,255,.95);color:#0a0907;font-size:20px;box-shadow:0 16px 40px -10px rgba(255,255,255,.3);border:none}
-  .pc.heart{color:#ff7a90;font-size:16px}
+  .pc.heart{color:#ff7a90}
+
+  /* Swipe-up hint */
+  .swipe-hint{display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:24px;padding:6px 0 14px;position:relative;z-index:6}
+  .swipe-hint .arrow{color:var(--muted);font-size:14px;animation:bob 2s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(-3px);opacity:1}}
+  .swipe-hint .lb{font-family:"Caveat",cursive;font-size:13px;color:var(--muted);opacity:.7}
+
+  /* UP NEXT — scrollable section */
+  .upnext{padding:20px 22px 30px;position:relative;z-index:6;margin-top:12px;border-top:1px solid var(--line);background:linear-gradient(180deg,#02020a 0%,#03020c 100%)}
+  .upnext .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+  .upnext .eyebrow{font-family:"Caveat",cursive;font-size:14px;color:var(--gold);opacity:.85}
+  .upnext .a{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+  .upnext h3{font-family:"Fraunces",serif;font-weight:200;font-size:22px;letter-spacing:-.01em;color:#fff;margin:0 0 14px;line-height:1.1}
+  .upnext h3 em{font-style:italic;color:var(--gold)}
+  .un-row{display:flex;align-items:center;gap:12px;padding:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:14px;margin-bottom:8px;cursor:pointer;transition:all .2s}
+  .un-row:hover{background:rgba(255,255,255,.06);transform:translateX(2px)}
+  .un-row .art{width:54px;height:54px;border-radius:12px;position:relative;overflow:hidden;flex:0 0 54px;border:1px solid rgba(232,200,150,.1)}
+  .un-row .art::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.18),transparent 60%)}
+  .un-row .meta{flex:1;min-width:0}
+  .un-row .nm{font-family:"Fraunces",serif;font-weight:400;font-size:14px;color:#fff;line-height:1.1}
+  .un-row .feel{font-family:"Caveat",cursive;font-size:13px;color:var(--muted);margin-top:2px}
+  .un-row .play{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);display:grid;place-items:center;color:#fff;font-size:11px;flex:0 0 32px}
+  .un-row .art.aqua{background:linear-gradient(135deg,#05202a,#3a8a9d)}
+  .un-row .art.cozy{background:linear-gradient(135deg,#2a1408,#c08550)}
+  .un-row .art.weather{background:linear-gradient(135deg,#0a0e1c,#3a4868)}
+  .un-row .art.wild{background:linear-gradient(135deg,#0f1a14,#4f7858)}
+  .un-row .art.night{background:linear-gradient(135deg,#0a0712,#3a2a60)}
+
+  /* Goal-based variation cards */
+  .variations{display:flex;gap:8px;overflow-x:auto;margin:14px -22px 0;padding:0 22px 4px;scrollbar-width:none}
+  .variations::-webkit-scrollbar{display:none}
+  .var-card{flex:0 0 auto;width:120px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);overflow:hidden;cursor:pointer}
+  .var-card .art{height:80px;position:relative;overflow:hidden}
+  .var-card .art::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.5))}
+  .var-card .em{position:absolute;top:8px;right:8px;font-size:14px;opacity:.85;z-index:2}
+  .var-card .nm{padding:8px 10px 2px;font-family:"Fraunces",serif;font-weight:400;font-size:12px;color:#fff;line-height:1.15;letter-spacing:-.005em}
+  .var-card .ct{padding:0 10px 10px;font-family:"Caveat",cursive;font-size:11px;color:var(--muted)}
+
+  .un-divider{margin:24px 0 14px;text-align:center;font-family:"Caveat",cursive;font-size:13px;color:var(--gold);opacity:.6;position:relative}
+  .un-divider::before,.un-divider::after{content:"";position:absolute;top:50%;width:30%;height:1px;background:linear-gradient(90deg,transparent,rgba(232,200,150,.2),transparent)}
+  .un-divider::before{left:0}
+  .un-divider::after{right:0}
+
+  /* ===================== DIM MODE ===================== */
+  .dim-stage{position:absolute;inset:0;background:#000;overflow:hidden;cursor:pointer;display:grid;place-items:center}
+  .dim-stage .dim-orb{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(167,139,250,.35),transparent 70%);filter:blur(10px);animation:dim-pulse 6s ease-in-out infinite}
+  @keyframes dim-pulse{0%,100%{opacity:.5;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}}
+  .dim-stage .dim-tinystars{position:absolute;inset:0;pointer-events:none}
+  .dim-stage .dim-tinystars span{position:absolute;background:#fff;border-radius:50%;opacity:.15;width:1px;height:1px;animation:twk 5s ease-in-out infinite}
+  .dim-stage .dim-tinystars span.s2{width:1.5px;height:1.5px}
+  .dim-stage .dim-meta{position:absolute;bottom:120px;left:0;right:0;text-align:center;color:rgba(255,255,255,.3);font-family:"Fraunces",serif;font-weight:200;font-size:36px;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+  .dim-stage .dim-place{position:absolute;bottom:84px;left:0;right:0;text-align:center;color:rgba(255,255,255,.28);font-family:"Caveat",cursive;font-size:13px}
+  .dim-stage .dim-tap{position:absolute;bottom:40px;left:0;right:0;text-align:center;color:rgba(255,255,255,.18);font-family:"Caveat",cursive;font-size:11px}
+  .dim-stage .dim-x{position:absolute;top:60px;left:24px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.04);display:grid;place-items:center;color:rgba(255,255,255,.4);font-size:14px}
 
   /* ===================== REFLECTION BOTTOM SHEET ===================== */
   .ref-stage{position:absolute;inset:0;background:linear-gradient(180deg,#0c1a1f 0%,#2a3520 25%,#1a2820 45%,#0a0807 100%);overflow:hidden}
@@ -460,31 +503,21 @@
     </div>
   </div>
 
-  <!-- ========== EXPANDED PLAYER (FLIPPED: small scene, sounds first, actions below) ========== -->
+  <!-- ========== PLAYER (pretty pills + scroll-up for more) ========== -->
   <div class="col">
-    <div class="label"><small>sounds first · smaller scene</small>Player</div>
+    <div class="label"><small>pretty pills + scrollable</small>Player</div>
     <div class="phone">
       <div class="notch"></div>
       <div class="status">9:41</div>
       <div class="status-r">●●● 96</div>
       <div class="player-stage">
-        <!-- SMALLER scene -->
         <div class="pscene-small">
           <div class="sky-glow"></div>
           <div class="sun"></div>
           <div class="trees-p">
             <svg viewBox="0 0 390 220" preserveAspectRatio="none">
               <g fill="rgba(8,16,10,.9)">
-                <polygon points="10,220 22,90 34,220"/>
-                <polygon points="40,220 56,60 72,220"/>
-                <polygon points="78,220 92,100 106,220"/>
-                <polygon points="112,220 130,50 148,220"/>
-                <polygon points="156,220 172,85 188,220"/>
-                <polygon points="196,220 214,45 232,220"/>
-                <polygon points="240,220 256,80 272,220"/>
-                <polygon points="280,220 296,65 312,220"/>
-                <polygon points="318,220 336,90 354,220"/>
-                <polygon points="358,220 374,70 390,220"/>
+                <polygon points="10,220 22,90 34,220"/><polygon points="40,220 56,60 72,220"/><polygon points="78,220 92,100 106,220"/><polygon points="112,220 130,50 148,220"/><polygon points="156,220 172,85 188,220"/><polygon points="196,220 214,45 232,220"/><polygon points="240,220 256,80 272,220"/><polygon points="280,220 296,65 312,220"/><polygon points="318,220 336,90 354,220"/><polygon points="358,220 374,70 390,220"/>
               </g>
             </svg>
           </div>
@@ -502,7 +535,6 @@
           <div class="sub">Still air, distant water, leaves breathing around you</div>
         </div>
 
-        <!-- SOUNDS FIRST -->
         <div class="pmix">
           <div class="bar-row b1"><div class="vfill"></div><div class="knob"></div><span class="ic">⌂</span><span class="nm">Forest ambience</span></div>
           <div class="bar-row b2"><div class="vfill"></div><div class="knob"></div><span class="ic">≋</span><span class="nm">Waterfall</span></div>
@@ -511,12 +543,30 @@
           <div class="add-sound">＋ add sound</div>
         </div>
 
-        <!-- ACTIONS BELOW -->
-        <div class="paction-row">
-          <div class="paction"><div class="ic">⏱</div><div class="lb">timer</div></div>
-          <div class="paction"><div class="ic">◐</div><div class="lb">dim</div></div>
-          <div class="paction"><div class="ic">ⓘ</div><div class="lb">about</div></div>
-          <div class="paction"><div class="ic">✎</div><div class="lb">how is it</div></div>
+        <!-- THREE PRETTY PILLS -->
+        <div class="pill-row">
+          <div class="pill on">
+            <svg class="ic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="13" r="8"/>
+              <line x1="12" y1="13" x2="12" y2="9"/>
+              <line x1="12" y1="13" x2="14.5" y2="13"/>
+              <line x1="9" y1="3" x2="15" y2="3"/>
+            </svg>
+            <span>Timer</span><span class="v">1h 30m</span>
+          </div>
+          <div class="pill">
+            <svg class="ic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 3 a9 9 0 0 0 0 18 z" fill="currentColor"/>
+            </svg>
+            <span>Dim</span>
+          </div>
+          <div class="pill">
+            <svg class="ic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 6h16M4 12h10M4 18h7"/>
+            </svg>
+            <span>Feedback</span>
+          </div>
         </div>
 
         <div class="pcontrols">
@@ -524,8 +574,92 @@
           <div class="pc big">❚❚</div>
           <div class="pc">⤺</div>
         </div>
+
+        <!-- Swipe-up hint -->
+        <div class="swipe-hint">
+          <div class="arrow">↑</div>
+          <div class="lb">swipe for more</div>
+        </div>
+
+        <!-- UP NEXT (scrollable) -->
+        <div class="upnext">
+          <div class="head">
+            <div class="eyebrow">— more for focus —</div>
+            <div class="a">All</div>
+          </div>
+          <h3>Places that <em>land</em> the same.</h3>
+
+          <div class="un-row">
+            <div class="art cozy"></div>
+            <div class="meta">
+              <div class="nm">Library, quiet pages</div>
+              <div class="feel">— here · 45 min · used 8 times</div>
+            </div>
+            <div class="play">▶</div>
+          </div>
+          <div class="un-row">
+            <div class="art weather"></div>
+            <div class="meta">
+              <div class="nm">Tokyo hotel, 2am</div>
+              <div class="feel">— gone · 1h · used 12 times</div>
+            </div>
+            <div class="play">▶</div>
+          </div>
+          <div class="un-row">
+            <div class="art cozy"></div>
+            <div class="meta">
+              <div class="nm">Old bookstore in Lisbon</div>
+              <div class="feel">— softer · 30 min · used 4 times</div>
+            </div>
+            <div class="play">▶</div>
+          </div>
+
+          <!-- Goal-based variations (different atmospheres) -->
+          <div class="un-divider">— or try a different feeling —</div>
+
+          <div class="variations">
+            <div class="var-card">
+              <div class="art" style="background:linear-gradient(135deg,#0a0e1c,#3a4868)"><div class="em">🌙</div></div>
+              <div class="nm">going to sleep</div>
+              <div class="ct">Rain on a tent</div>
+            </div>
+            <div class="var-card">
+              <div class="art" style="background:linear-gradient(135deg,#05202a,#3a8a9d)"><div class="em">🌿</div></div>
+              <div class="nm">relax</div>
+              <div class="ct">Greek balcony</div>
+            </div>
+            <div class="var-card">
+              <div class="art" style="background:linear-gradient(135deg,#1c3528,#0f1a14)"><div class="em">☀</div></div>
+              <div class="nm">feel alive</div>
+              <div class="ct">Forest at dawn</div>
+            </div>
+            <div class="var-card">
+              <div class="art" style="background:linear-gradient(135deg,#0a0712,#3a2a60)"><div class="em">🌅</div></div>
+              <div class="nm">let the day go</div>
+              <div class="ct">Train at night</div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- ========== DIM MODE ========== -->
+  <div class="col">
+    <div class="label"><small>tap "Dim" pill →</small>Dim mode</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="status" style="color:rgba(255,255,255,.2)">9:41</div>
+      <div class="dim-stage" id="dimstage">
+        <div class="dim-tinystars" id="dimstars"></div>
+        <div class="dim-orb"></div>
+        <div class="dim-x">×</div>
+        <div class="dim-meta">1:23:47</div>
+        <div class="dim-place">— Deep forest focus · still playing —</div>
+        <div class="dim-tap">tap anywhere to wake</div>
+      </div>
+      <div class="home-indicator" style="opacity:.15"></div>
     </div>
   </div>
 
