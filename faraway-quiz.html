@@ -105,21 +105,17 @@ h1{font-weight:600;line-height:1.2;letter-spacing:-.02em;font-size:clamp(23px,6.
 
 /* loader */
 .load{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
-.ripple{position:relative;width:170px;height:170px;display:grid;place-items:center;margin-bottom:36px}
-.ripple span{position:absolute;inset:0;margin:auto;width:58px;height:58px;border-radius:50%;border:1px solid var(--amber);opacity:0;animation:ripple 3s var(--ease) infinite}
-.ripple span:nth-child(2){animation-delay:1s}
-.ripple span:nth-child(3){animation-delay:2s}
-@keyframes ripple{0%{transform:scale(.72);opacity:.5}70%{opacity:.1}100%{transform:scale(2.6);opacity:0}}
-.ripple .glowmoon{position:relative;width:58px;height:58px;border-radius:50%;
-  background:radial-gradient(circle at 40% 36%,#fffdf4,var(--moon));box-shadow:0 0 38px 8px rgba(185,167,240,.5);
-  animation:pulse 3s var(--ease) infinite}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.09)}}
+.eq{position:relative;display:flex;align-items:center;gap:6px;height:86px;margin-bottom:44px}
+.eq::before{content:"";position:absolute;inset:0;margin:auto;width:172px;height:172px;border-radius:50%;background:radial-gradient(circle,rgba(185,167,240,.24),transparent 66%);z-index:-1}
+.eq span{width:6px;height:14px;border-radius:99px;background:linear-gradient(180deg,var(--amber),var(--amber-deep));animation:eqbar 1.05s var(--ease) infinite alternate}
+.eq span:nth-child(2n){animation-duration:.8s}
+.eq span:nth-child(3n){animation-duration:1.4s}
+.eq span:nth-child(4n){animation-duration:.95s}
+.eq span:nth-child(5n){animation-duration:1.2s}
+@keyframes eqbar{0%{height:12px;opacity:.45}100%{height:62px;opacity:1}}
 .load h1{font-size:23px}
-.load-sub{margin-top:11px;color:var(--ink-dim);font-size:14.5px}
-.load-bar{margin-top:28px;width:170px;height:3px;border-radius:99px;background:rgba(255,255,255,.11);overflow:hidden}
-.load-bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--amber-deep),var(--amber));animation:fillbar 2.5s cubic-bezier(.4,.1,.2,1) forwards}
-@keyframes fillbar{0%{width:6%}100%{width:100%}}
-@media (prefers-reduced-motion:reduce){.ripple span{animation:none;opacity:.22}.ripple .glowmoon{animation:none}.load-bar i{animation-duration:.4s}}
+.load-sub{margin-top:12px;color:var(--ink-dim);font-size:14.5px;transition:opacity .3s var(--ease)}
+@media (prefers-reduced-motion:reduce){.eq span{animation:none;height:34px}}
 
 /* result */
 .scene{position:relative;width:calc(100% + 48px);margin-left:-24px;margin-top:-14px;aspect-ratio:4/3.3;flex:0 0 auto}
@@ -244,12 +240,12 @@ function renderTrust(){
   s.innerHTML=`
     <div class="trust">
       <div class="stars-big">★★★★★</div>
-      <h1 class="trust-head">Sound can change how you feel</h1>
+      <h1 class="trust-head">This isn't background noise</h1>
       <div class="research">
         <p class="research-stat">A 2021 review in PNAS found natural soundscapes lower stress and improve mood and focus.</p>
         <p class="research-src">Buxton et al., PNAS, 2021</p>
       </div>
-      <p class="note">Faraway builds yours from a library of 300+ sounds.</p>
+      <p class="note">In Faraway, you build your own, layer by layer.</p>
     </div>
     <div class="cta-wrap"><button class="btn" id="cont">Compose my soundscape</button></div>`;
   scroll.appendChild(s);
@@ -257,14 +253,16 @@ function renderTrust(){
 }
 function renderLoad(){
   const s=screenEl(), P=PLACE[answers.place]||PLACE.cabin;
+  const caps=[`Layering ${sceneName(P.scene)}`,`Adding ${P.layers[2].toLowerCase()}`,`Balancing the mix`,`Softening the edges`];
   s.innerHTML=`<div class="load">
-    <div class="ripple"><span></span><span></span><span></span><div class="glowmoon"></div></div>
+    <div class="eq" aria-hidden="true">${Array.from({length:9}).map((_,i)=>`<span style="animation-delay:${(i*0.11).toFixed(2)}s"></span>`).join("")}</div>
     <h1>Mixing your soundscape</h1>
-    <p class="load-sub">Layering ${sceneName(P.scene)}</p>
-    <div class="load-bar"><i></i></div>
+    <p class="load-sub" id="lsub">${caps[0]}</p>
   </div>`;
   scroll.appendChild(s);
-  setTimeout(()=>go(S_RESULT),2500);
+  const sub=s.querySelector("#lsub"); let c=0;
+  const iv=setInterval(()=>{c++;if(c<caps.length){sub.style.opacity=0;setTimeout(()=>{sub.textContent=caps[c];sub.style.opacity=1;},280);}},1150);
+  setTimeout(()=>{clearInterval(iv);go(S_RESULT);},4400);
 }
 function sceneName(sc){return {cabin:"a cabin on a lake",tent:"a tent under stars",ocean:"a cottage by the sea",train:"a night train",forest:"a quiet forest",lighthouse:"a foggy lighthouse"}[sc];}
 function renderResult(){
@@ -277,13 +275,13 @@ function renderResult(){
       <div class="rlabel">Your soundscape is ready</div>
       <div class="scenetitle">${titleFor(answers.place)}</div>
       <div class="card-prompt">
-        <div class="lbl">Your prompt, in your words</div>
+        <div class="lbl">What you'll hear</div>
         <p>"${prompt}"</p>
       </div>
       <div class="layers">${layers.map((l,i)=>`<span class="layer" style="animation-delay:${i*70}ms">${l}<span class="bar2"><i style="width:${[62,80,54,72,66][i%5]}%"></i></span></span>`).join("")}</div>
       <div class="cta-wrap">
         <button class="btn" id="play">Save this sound</button>
-        <div class="legal">Free in the app. Change any layer whenever you like.</div>
+        <div class="legal">Save it and shape every layer in the Faraway app.</div>
         <button class="btn ghost" id="restart">Start over</button>
       </div>
     </div>`;
