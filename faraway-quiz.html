@@ -123,6 +123,7 @@ h1{font-weight:600;line-height:1.2;letter-spacing:-.02em;font-size:clamp(23px,6.
 .result-body{padding-top:22px;display:flex;flex-direction:column;flex:1}
 .rlabel{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
 .scenetitle{font-family:var(--sans);font-weight:700;font-size:28px;letter-spacing:-.02em;color:#f6f3fc;margin-top:5px}
+.mirror{color:var(--ink-dim);font-size:15px;line-height:1.55;margin-top:12px;font-weight:400}
 .card-prompt{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:18px 18px 18px 20px;position:relative;overflow:hidden;margin-top:20px}
 .card-prompt::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--amber)}
 .card-prompt .lbl{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
@@ -179,6 +180,9 @@ const GOAL = {
 };
 const TEXTURE_LAYER = {minimal:"Kept sparse",nature:"Nature forward",music:"+ Gentle music",cozy:"+ Crackling fire"};
 const TEXTURE_ADD = {minimal:"",nature:"",music:", with gentle ambient music",cozy:", and a warm crackling fire"};
+const TRUST_HEAD = {sleep:"Your mind won't slow down. Sound can.",focus:"Focus you don't have to force.",calm:"When you can't settle, sound helps.",mood:"Turn the whole room soft.",escape:"Somewhere else, one press away."};
+const STRUGGLE = {racing:"a racing mind",scrolling:"late-night scrolling",replay:"replaying the day",silence:"a silence that feels too loud",restless:"restless energy"};
+const AIM = {sleep:"drift off",focus:"stay with your work",calm:"let your shoulders drop",mood:"settle into the evening",escape:"slip somewhere else for a while"};
 
 const answers = {};
 let idx = 0;
@@ -240,12 +244,12 @@ function renderTrust(){
   s.innerHTML=`
     <div class="trust">
       <div class="stars-big">★★★★★</div>
-      <h1 class="trust-head">This isn't background noise</h1>
+      <h1 class="trust-head">${TRUST_HEAD[answers.goal]||"This isn't background noise"}</h1>
       <div class="research">
-        <p class="research-stat">A 2021 review in PNAS found natural soundscapes lower stress and improve mood and focus.</p>
+        <p class="research-stat">In a 2021 research review, natural soundscapes measurably lowered stress and lifted mood and focus, just by listening.</p>
         <p class="research-src">Buxton et al., PNAS, 2021</p>
       </div>
-      <p class="note">In Faraway, you build your own, layer by layer.</p>
+      <p class="note">Next, we build yours, layered from scratch, exactly how you described it.</p>
     </div>
     <div class="cta-wrap"><button class="btn" id="cont">Compose my soundscape</button></div>`;
   scroll.appendChild(s);
@@ -268,12 +272,14 @@ function sceneName(sc){return {cabin:"a cabin on a lake",tent:"a tent under star
 function renderResult(){
   const s=screenEl(), P=PLACE[answers.place]||PLACE.cabin;
   const prompt=cap(`${P.base}, ${P.far}${TEXTURE_ADD[answers.texture]||""}.`);
+  const mirror=`You told us ${STRUGGLE[answers.mind]||"a restless mind"} keeps getting in the way. We built this to settle it, so you can ${AIM[answers.goal]||"finally settle"}.`;
   const layers=P.layers.concat([TEXTURE_LAYER[answers.texture]||"Balanced mix"]);
   s.innerHTML=`
     <div class="scene">${SCENES(P.scene)}</div>
     <div class="result-body">
       <div class="rlabel">Your soundscape is ready</div>
       <div class="scenetitle">${titleFor(answers.place)}</div>
+      <p class="mirror">${mirror}</p>
       <div class="card-prompt">
         <div class="lbl">What you'll hear</div>
         <p>"${prompt}"</p>
