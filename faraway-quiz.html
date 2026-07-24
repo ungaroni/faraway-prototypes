@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Faraway — Find your soundscape</title>
+<title>Faraway: Find your soundscape</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --sky-0:#080a1f; --sky-1:#121233; --sky-2:#2a2260; --sky-3:#4a3c86; --sky-4:#7d6bb0;
@@ -97,36 +97,40 @@ h1{font-weight:600;line-height:1.2;letter-spacing:-.02em;font-size:clamp(23px,6.
 .stars-big{color:var(--amber);font-size:25px;letter-spacing:7px;text-indent:7px}
 .rating-sub{margin-top:13px;font-size:13.5px;color:var(--ink-dim);font-weight:500}
 .trust-head{margin-top:30px;font-size:clamp(23px,6.2vw,27px);font-weight:600;line-height:1.24;letter-spacing:-.02em;color:#f6f3fc;max-width:15ch}
-.testi{margin-top:32px;border:1px solid var(--line);background:var(--card);border-radius:16px;padding:20px 20px 18px;text-align:left;width:100%}
-.testi-stars{color:var(--amber);font-size:12px;letter-spacing:3px}
-.testi p{font-family:var(--serif);font-style:italic;font-weight:500;font-size:19px;line-height:1.42;color:#efe9fb;margin-top:11px}
-.testi-name{display:block;margin-top:13px;font-size:13px;color:var(--ink-faint);font-weight:600}
+.research{margin-top:30px;border:1px solid var(--line);background:var(--card);border-radius:16px;padding:22px 20px;text-align:left;width:100%}
+.research-stat{font-size:16px;line-height:1.5;color:#eae4f7;font-weight:500}
+.research-src{margin-top:13px;font-size:12px;color:var(--ink-faint);font-weight:500;display:flex;align-items:center;gap:7px}
+.research-src::before{content:"";width:14px;height:1px;background:var(--ink-faint);opacity:.6}
 .note{margin-top:22px;font-size:12.5px;color:var(--ink-faint);text-align:center;line-height:1.5}
 
 /* loader */
 .load{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
-.ring{width:110px;height:110px;position:relative;margin-bottom:30px}
-.ring svg{position:absolute;inset:0;transform:rotate(-90deg)}
-.ring .glowmoon{position:absolute;inset:0;margin:auto;width:54px;height:54px;border-radius:50%;
-  background:radial-gradient(circle at 40% 36%,#fffdf4,var(--moon));box-shadow:0 0 34px 6px rgba(185,167,240,.45)}
-.load h1{font-size:24px}
-.tick-list{margin-top:24px;display:flex;flex-direction:column;gap:12px;min-height:100px;text-align:left}
-.tl{display:flex;align-items:center;gap:11px;color:var(--ink-faint);font-size:14.5px;opacity:.4;transition:.4s var(--ease);font-weight:500}
-.tl.on{opacity:1;color:var(--ink-dim)}
-.tl .dot{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;flex:0 0 auto}
-.tl.on .dot{background:var(--amber);border-color:var(--amber)}
-.tl .dot svg{opacity:0;color:#2a1600}.tl.on .dot svg{opacity:1}
+.ripple{position:relative;width:170px;height:170px;display:grid;place-items:center;margin-bottom:36px}
+.ripple span{position:absolute;inset:0;margin:auto;width:58px;height:58px;border-radius:50%;border:1px solid var(--amber);opacity:0;animation:ripple 3s var(--ease) infinite}
+.ripple span:nth-child(2){animation-delay:1s}
+.ripple span:nth-child(3){animation-delay:2s}
+@keyframes ripple{0%{transform:scale(.72);opacity:.5}70%{opacity:.1}100%{transform:scale(2.6);opacity:0}}
+.ripple .glowmoon{position:relative;width:58px;height:58px;border-radius:50%;
+  background:radial-gradient(circle at 40% 36%,#fffdf4,var(--moon));box-shadow:0 0 38px 8px rgba(185,167,240,.5);
+  animation:pulse 3s var(--ease) infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.09)}}
+.load h1{font-size:23px}
+.load-sub{margin-top:11px;color:var(--ink-dim);font-size:14.5px}
+.load-bar{margin-top:28px;width:170px;height:3px;border-radius:99px;background:rgba(255,255,255,.11);overflow:hidden}
+.load-bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--amber-deep),var(--amber));animation:fillbar 2.5s cubic-bezier(.4,.1,.2,1) forwards}
+@keyframes fillbar{0%{width:6%}100%{width:100%}}
+@media (prefers-reduced-motion:reduce){.ripple span{animation:none;opacity:.22}.ripple .glowmoon{animation:none}.load-bar i{animation-duration:.4s}}
 
 /* result */
 .scene{position:relative;width:calc(100% + 48px);margin-left:-24px;margin-top:-14px;aspect-ratio:4/3.3;flex:0 0 auto}
 .scene svg{width:100%;height:100%;display:block}
 .result-body{padding-top:22px;display:flex;flex-direction:column;flex:1}
 .rlabel{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
-.scenetitle{font-family:var(--serif);font-weight:600;font-size:34px;letter-spacing:0;color:#f6f3fc;margin-top:5px}
+.scenetitle{font-family:var(--sans);font-weight:700;font-size:28px;letter-spacing:-.02em;color:#f6f3fc;margin-top:5px}
 .card-prompt{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:18px 18px 18px 20px;position:relative;overflow:hidden;margin-top:20px}
 .card-prompt::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--amber)}
 .card-prompt .lbl{font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
-.card-prompt p{font-family:var(--serif);font-size:22px;line-height:1.42;font-weight:500;font-style:italic;color:#efe9fb;margin-top:10px}
+.card-prompt p{font-family:var(--sans);font-size:16.5px;line-height:1.5;font-weight:500;color:#f2eefb;margin-top:10px}
 .layers{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
 .layer{font-size:12.5px;color:var(--ink-dim);border:1px solid var(--line);background:var(--card);padding:7px 12px;border-radius:10px;display:flex;gap:9px;align-items:center;font-weight:500;animation:pop .4s var(--ease) both}
 .layer .bar2{width:30px;height:3px;border-radius:2px;background:rgba(255,255,255,.14);overflow:hidden}
@@ -160,7 +164,7 @@ const QUESTIONS = [
   { key:"place", q:"Where do you feel most at peace?",
     opts:[{label:"A cabin by a still lake",v:"cabin"},{label:"A tent under the stars",v:"tent"},{label:"A cottage by the ocean",v:"ocean"},{label:"A night train, window seat",v:"train"},{label:"Deep in a quiet forest",v:"forest"},{label:"A lighthouse in the fog",v:"lighthouse"}] },
   { key:"texture", q:"How do you like your sound?",
-    opts:[{label:"Barely there, just a hush",v:"minimal"},{label:"Nature-heavy — rain, wind, water",v:"nature"},{label:"Layered, with gentle music",v:"music"},{label:"Warm and cozy — fire, low hum",v:"cozy"}] },
+    opts:[{label:"Barely there",v:"minimal"},{label:"Rain, wind, and water",v:"nature"},{label:"A little music in it",v:"music"},{label:"Warm and cozy",v:"cozy"}] },
 ];
 const PLACE = {
   cabin:{scene:"cabin",base:"rain tapping a cabin window",far:"a still lake below",layers:["Soft rain","Lake lapping","Distant loon"]},
@@ -237,18 +241,15 @@ function renderQuestion(qi){
 }
 function renderTrust(){
   const s=screenEl();
-  // NOTE: rating, review count and testimonial are PLACEHOLDERS — replace with real App Store data before publishing.
   s.innerHTML=`
     <div class="trust">
       <div class="stars-big">★★★★★</div>
-      <div class="rating-sub">4.8 · App Store · 12k ratings</div>
-      <h1 class="trust-head">Loved by people who couldn't switch off</h1>
-      <div class="testi">
-        <div class="testi-stars">★★★★★</div>
-        <p>"I'm asleep before the fire fades. Nothing else quiets my head like this."</p>
-        <span class="testi-name">Maya R.</span>
+      <h1 class="trust-head">Sound can change how you feel</h1>
+      <div class="research">
+        <p class="research-stat">A 2021 review in PNAS found natural soundscapes lower stress and improve mood and focus.</p>
+        <p class="research-src">Buxton et al., PNAS, 2021</p>
       </div>
-      <p class="note">Free to try · No account needed</p>
+      <p class="note">Faraway builds yours from a library of 300+ sounds.</p>
     </div>
     <div class="cta-wrap"><button class="btn" id="cont">Compose my soundscape</button></div>`;
   scroll.appendChild(s);
@@ -256,22 +257,14 @@ function renderTrust(){
 }
 function renderLoad(){
   const s=screenEl(), P=PLACE[answers.place]||PLACE.cabin;
-  const steps=[`Reading your mood`,`Choosing a scene — ${sceneName(P.scene)}`,`Layering ${P.layers[0].toLowerCase()} and ${P.layers[1].toLowerCase()}`,`Tuning each track's volume`,`Naming your soundscape`];
   s.innerHTML=`<div class="load">
-    <div class="ring">
-      <svg viewBox="0 0 110 110"><circle cx="55" cy="55" r="50" fill="none" stroke="rgba(255,255,255,.09)" stroke-width="3.5"/>
-      <circle id="prog" cx="55" cy="55" r="50" fill="none" stroke="#f0a44e" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314"/></svg>
-      <div class="glowmoon"></div>
-    </div>
-    <h1>Composing your soundscape…</h1>
-    <div class="tick-list">${steps.map((t,i)=>`<div class="tl" data-i="${i}"><span class="dot">${ICON_CHECK}</span>${t}</div>`).join("")}</div>
+    <div class="ripple"><span></span><span></span><span></span><div class="glowmoon"></div></div>
+    <h1>Mixing your soundscape</h1>
+    <p class="load-sub">Layering ${sceneName(P.scene)}</p>
+    <div class="load-bar"><i></i></div>
   </div>`;
   scroll.appendChild(s);
-  const tls=[...s.querySelectorAll(".tl")], prog=s.querySelector("#prog"); let i=0;
-  const iv=setInterval(()=>{
-    if(i<tls.length){tls[i].classList.add("on");prog.style.transition="stroke-dashoffset .55s var(--ease)";prog.style.strokeDashoffset=314-(314*(i+1)/tls.length);i++;}
-    else{clearInterval(iv);setTimeout(()=>go(S_RESULT),460);}
-  },740);
+  setTimeout(()=>go(S_RESULT),2500);
 }
 function sceneName(sc){return {cabin:"a cabin on a lake",tent:"a tent under stars",ocean:"a cottage by the sea",train:"a night train",forest:"a quiet forest",lighthouse:"a foggy lighthouse"}[sc];}
 function renderResult(){
@@ -289,14 +282,14 @@ function renderResult(){
       </div>
       <div class="layers">${layers.map((l,i)=>`<span class="layer" style="animation-delay:${i*70}ms">${l}<span class="bar2"><i style="width:${[62,80,54,72,66][i%5]}%"></i></span></span>`).join("")}</div>
       <div class="cta-wrap">
-        <button class="btn" id="play">Play my soundscape in Faraway</button>
-        <div class="legal">Opens free in the app · Tweak any layer or re-prompt anytime</div>
+        <button class="btn" id="play">Save this sound</button>
+        <div class="legal">Free in the app. Change any layer whenever you like.</div>
         <button class="btn ghost" id="restart">Start over</button>
       </div>
     </div>`;
   scroll.appendChild(s);
   s.querySelector("#restart").onclick=()=>{for(const k in answers)delete answers[k];go(0);};
-  s.querySelector("#play").onclick=()=>{const b=s.querySelector("#play");b.textContent="Opening Faraway…";b.disabled=true;};
+  s.querySelector("#play").onclick=()=>{const b=s.querySelector("#play");b.textContent="Saved to your library";b.disabled=true;};
 }
 function cap(x){return x.charAt(0).toUpperCase()+x.slice(1);}
 function titleFor(place){return {cabin:"Rain on the Lake",tent:"Under a Thousand Stars",ocean:"The Tide Comes In",train:"The Midnight Line",forest:"Deep in the Pines",lighthouse:"The Keeper's Fog"}[place]||"Your Night";}
