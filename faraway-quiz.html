@@ -105,17 +105,12 @@ h1{font-weight:600;line-height:1.2;letter-spacing:-.02em;font-size:clamp(23px,6.
 
 /* loader */
 .load{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
-.eq{position:relative;display:flex;align-items:center;gap:6px;height:86px;margin-bottom:44px}
-.eq::before{content:"";position:absolute;inset:0;margin:auto;width:172px;height:172px;border-radius:50%;background:radial-gradient(circle,rgba(185,167,240,.24),transparent 66%);z-index:-1}
-.eq span{width:6px;height:14px;border-radius:99px;background:linear-gradient(180deg,var(--amber),var(--amber-deep));animation:eqbar 1.05s var(--ease) infinite alternate}
-.eq span:nth-child(2n){animation-duration:.8s}
-.eq span:nth-child(3n){animation-duration:1.4s}
-.eq span:nth-child(4n){animation-duration:.95s}
-.eq span:nth-child(5n){animation-duration:1.2s}
-@keyframes eqbar{0%{height:12px;opacity:.45}100%{height:62px;opacity:1}}
-.load h1{font-size:23px}
-.load-sub{margin-top:12px;color:var(--ink-dim);font-size:14.5px;transition:opacity .3s var(--ease)}
-@media (prefers-reduced-motion:reduce){.eq span{animation:none;height:34px}}
+.orb{width:250px;height:250px;border-radius:50%;margin-bottom:34px;
+  background:radial-gradient(circle at 50% 44%,rgba(232,222,255,1) 0%,rgba(190,162,246,.66) 21%,rgba(132,104,204,.26) 46%,transparent 70%);
+  filter:blur(6px);animation:orbpulse 4.2s var(--ease) infinite}
+@keyframes orbpulse{0%,100%{transform:scale(.88);opacity:.8}50%{transform:scale(1.08);opacity:1}}
+.load-sub{margin-top:6px;color:var(--ink-dim);font-size:15px;transition:opacity .35s var(--ease)}
+@media (prefers-reduced-motion:reduce){.orb{animation:none}}
 
 /* result */
 .scene{position:relative;width:calc(100% + 48px);margin-left:-24px;margin-top:-14px;aspect-ratio:4/3.3;flex:0 0 auto}
@@ -180,7 +175,7 @@ const GOAL = {
 };
 const TEXTURE_LAYER = {minimal:"Kept sparse",nature:"Nature forward",music:"+ Gentle music",cozy:"+ Crackling fire"};
 const TEXTURE_ADD = {minimal:"",nature:"",music:", with gentle ambient music",cozy:", and a warm crackling fire"};
-const TRUST_HEAD = {sleep:"Your mind won't slow down. Sound can.",focus:"Focus you don't have to force.",calm:"When you can't settle, sound helps.",mood:"Turn the whole room soft.",escape:"Somewhere else, one press away."};
+const TRUST_HEAD = {sleep:"The right sound slows a racing mind.",focus:"Focus you don't have to force.",calm:"Sound can settle what you can't.",mood:"Set the whole evening with sound.",escape:"Sound can carry you somewhere else."};
 const STRUGGLE = {racing:"a racing mind",scrolling:"late-night scrolling",replay:"replaying the day",silence:"a silence that feels too loud",restless:"restless energy"};
 const AIM = {sleep:"drift off",focus:"stay with your work",calm:"let your shoulders drop",mood:"settle into the evening",escape:"slip somewhere else for a while"};
 
@@ -211,7 +206,7 @@ function updateChrome(){
   step.classList.toggle("show",showStep);
   if(showStep) step.textContent=(idx+1)+" of "+N;
   brandmark.classList.toggle("show", idx===S_RESULT);
-  document.querySelector(".bar").style.opacity = idx===S_RESULT?0:1;
+  document.querySelector(".bar").style.opacity = (idx===S_RESULT||idx===S_LOAD)?0:1;
 }
 function render(){
   updateChrome(); scroll.innerHTML="";
@@ -249,7 +244,6 @@ function renderTrust(){
         <p class="research-stat">In a 2021 research review, natural soundscapes measurably lowered stress and lifted mood and focus, just by listening.</p>
         <p class="research-src">Buxton et al., PNAS, 2021</p>
       </div>
-      <p class="note">Next, we build yours, layered from scratch, exactly how you described it.</p>
     </div>
     <div class="cta-wrap"><button class="btn" id="cont">Compose my soundscape</button></div>`;
   scroll.appendChild(s);
@@ -257,16 +251,15 @@ function renderTrust(){
 }
 function renderLoad(){
   const s=screenEl(), P=PLACE[answers.place]||PLACE.cabin;
-  const caps=[`Layering ${sceneName(P.scene)}`,`Adding ${P.layers[2].toLowerCase()}`,`Balancing the mix`,`Softening the edges`];
+  const caps=[`Layering ${sceneName(P.scene)}`,`Adding ${P.layers[2].toLowerCase()}`,`Balancing the mix`,`Almost there…`];
   s.innerHTML=`<div class="load">
-    <div class="eq" aria-hidden="true">${Array.from({length:9}).map((_,i)=>`<span style="animation-delay:${(i*0.11).toFixed(2)}s"></span>`).join("")}</div>
-    <h1>Mixing your soundscape</h1>
+    <div class="orb" aria-hidden="true"></div>
     <p class="load-sub" id="lsub">${caps[0]}</p>
   </div>`;
   scroll.appendChild(s);
   const sub=s.querySelector("#lsub"); let c=0;
-  const iv=setInterval(()=>{c++;if(c<caps.length){sub.style.opacity=0;setTimeout(()=>{sub.textContent=caps[c];sub.style.opacity=1;},280);}},1150);
-  setTimeout(()=>{clearInterval(iv);go(S_RESULT);},4400);
+  const iv=setInterval(()=>{c++;if(c<caps.length){sub.style.opacity=0;setTimeout(()=>{sub.textContent=caps[c];sub.style.opacity=1;},300);}},1200);
+  setTimeout(()=>{clearInterval(iv);go(S_RESULT);},4800);
 }
 function sceneName(sc){return {cabin:"a cabin on a lake",tent:"a tent under stars",ocean:"a cottage by the sea",train:"a night train",forest:"a quiet forest",lighthouse:"a foggy lighthouse"}[sc];}
 function renderResult(){
