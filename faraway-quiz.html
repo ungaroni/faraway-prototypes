@@ -175,7 +175,6 @@ const GOAL = {
 };
 const TEXTURE_LAYER = {minimal:"Kept sparse",nature:"Nature forward",music:"+ Gentle music",cozy:"+ Crackling fire"};
 const TEXTURE_ADD = {minimal:"",nature:"",music:", with gentle ambient music",cozy:", and a warm crackling fire"};
-const TRUST_HEAD = {sleep:"The right sound slows a racing mind.",focus:"Focus you don't have to force.",calm:"Sound can settle what you can't.",mood:"Set the whole evening with sound.",escape:"Sound can carry you somewhere else."};
 const STRUGGLE = {racing:"a racing mind",scrolling:"late-night scrolling",replay:"replaying the day",silence:"a silence that feels too loud",restless:"restless energy"};
 const AIM = {sleep:"drift off",focus:"stay with your work",calm:"let your shoulders drop",mood:"settle into the evening",escape:"slip somewhere else for a while"};
 
@@ -239,7 +238,7 @@ function renderTrust(){
   s.innerHTML=`
     <div class="trust">
       <div class="stars-big">★★★★★</div>
-      <h1 class="trust-head">${TRUST_HEAD[answers.goal]||"This isn't background noise"}</h1>
+      <h1 class="trust-head">The right sound slows a racing mind.</h1>
       <div class="research">
         <p class="research-stat">In a 2021 research review, natural soundscapes measurably lowered stress and lifted mood and focus, just by listening.</p>
         <p class="research-src">Buxton et al., PNAS, 2021</p>
